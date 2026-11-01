@@ -1,0 +1,1942 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Space Weather: From the Sun to Earth | Interactive Presentation | BSERC Project 2</title>
+  <meta name="description" content="10-slide interactive scientific presentation deck exploring solar drivers, Aditya-L1 early warning observations, magnetospheric coupling, and technological vulnerabilities.">
+
+  <style>
+    /* ==========================================================================
+       1. DESIGN TOKENS & SCIENTIFIC COLOR PALETTE
+       ========================================================================== */
+    :root {
+      --bg-void: #050814;
+      --bg-primary: #070b19;
+      --bg-secondary: #0d1428;
+      --bg-card: #121c38;
+      --bg-card-hover: #1a274c;
+      --bg-overlay: rgba(5, 8, 20, 0.92);
+
+      --border-subtle: #1e2c52;
+      --border-accent: #2e4480;
+
+      --text-bright: #ffffff;
+      --text-main: #e2e8f0;
+      --text-muted: #94a3b8;
+      --text-dim: #64748b;
+
+      /* Scientific Color Spectrum */
+      --solar-amber: #f59e0b;
+      --solar-orange: #f97316;
+      --solar-flare: #fde047;
+      --plasma-cyan: #06b6d4;
+      --aditya-blue: #38bdf8;
+      --aurora-emerald: #10b981;
+      --danger-rose: #f43f5e;
+      --infra-purple: #a855f7;
+
+      --font-sans: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+
+      --radius-sm: 6px;
+      --radius-md: 10px;
+      --radius-lg: 16px;
+      --radius-full: 9999px;
+
+      --transition-fast: 0.15s ease;
+      --transition-normal: 0.25s ease;
+      --transition-smooth: 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    /* CSS Reset */
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg-void);
+      color: var(--text-main);
+      font-family: var(--font-sans);
+      line-height: 1.5;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow-x: hidden;
+      background-image: 
+        radial-gradient(circle at 10% 15%, rgba(245, 158, 11, 0.04) 0%, transparent 40%),
+        radial-gradient(circle at 90% 85%, rgba(6, 182, 212, 0.05) 0%, transparent 40%);
+    }
+
+    /* Focus Indicators & Accessibility */
+    :focus-visible {
+      outline: 2px solid var(--plasma-cyan);
+      outline-offset: 3px;
+    }
+
+    .skip-link {
+      position: absolute;
+      top: -40px;
+      left: 1rem;
+      background: var(--plasma-cyan);
+      color: var(--bg-void);
+      padding: 0.5rem 1rem;
+      font-weight: 700;
+      border-radius: var(--radius-sm);
+      z-index: 1000;
+      transition: top 0.2s ease;
+    }
+    .skip-link:focus {
+      top: 1rem;
+    }
+
+    /* ==========================================================================
+       2. TOP BAR & PRESENTATION PROGRESS DOCK
+       ========================================================================== */
+    .pres-header {
+      background: rgba(7, 11, 25, 0.95);
+      border-bottom: 1px solid var(--border-subtle);
+      position: sticky;
+      top: 0;
+      z-index: 40;
+      backdrop-filter: blur(12px);
+    }
+
+    /* Continuous Slide Progress Bar */
+    .progress-track {
+      width: 100%;
+      height: 4px;
+      background: rgba(30, 44, 82, 0.5);
+      position: relative;
+    }
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--solar-amber), var(--plasma-cyan));
+      width: 10%;
+      transition: width var(--transition-normal);
+    }
+
+    .header-inner {
+      max-width: 1300px;
+      margin: 0 auto;
+      padding: 0.65rem 1.25rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+    }
+
+    .brand-group {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .brand-badge {
+      width: 32px;
+      height: 32px;
+      border-radius: var(--radius-sm);
+      background: linear-gradient(135deg, var(--solar-amber), var(--solar-orange));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--bg-void);
+      font-weight: 800;
+      font-size: 0.85rem;
+      flex-shrink: 0;
+      box-shadow: 0 0 12px rgba(245, 158, 11, 0.3);
+    }
+
+    .brand-title h1 {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: var(--text-bright);
+    }
+    .brand-title p {
+      font-size: 0.72rem;
+      color: var(--text-muted);
+    }
+
+    .header-controls {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+
+    .project-nav {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+      margin-right: 0.25rem;
+    }
+
+    .nav-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      padding: 0.3rem 0.7rem;
+      border-radius: var(--radius-full);
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-decoration: none;
+      background: var(--bg-card);
+      color: var(--text-main);
+      border: 1px solid var(--border-subtle);
+      transition: all var(--transition-fast);
+      min-height: 34px;
+      white-space: nowrap;
+    }
+    .nav-pill:hover,
+    .nav-pill:focus-visible {
+      background: var(--bg-card-hover);
+      border-color: var(--border-accent);
+      color: var(--text-bright);
+    }
+    .nav-pill.active {
+      background: rgba(6, 182, 212, 0.16);
+      border-color: var(--plasma-cyan);
+      color: var(--plasma-cyan);
+    }
+
+    @media (max-width: 600px) {
+      .nav-pill {
+        padding: 0.28rem 0.55rem;
+        font-size: 0.7rem;
+      }
+    }
+
+    .slide-counter-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      padding: 0.3rem 0.75rem;
+      border-radius: var(--radius-full);
+      font-family: var(--font-mono);
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: var(--aditya-blue);
+      cursor: pointer;
+      min-height: 36px;
+      transition: all var(--transition-fast);
+    }
+    .slide-counter-pill:hover {
+      background: var(--bg-card-hover);
+      border-color: var(--border-accent);
+      color: var(--text-bright);
+    }
+
+    .btn-icon {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      color: var(--text-main);
+      padding: 0.35rem 0.65rem;
+      border-radius: var(--radius-sm);
+      font-size: 0.75rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      min-height: 36px;
+      transition: all var(--transition-fast);
+    }
+    .btn-icon:hover {
+      background: var(--bg-card-hover);
+      border-color: var(--border-accent);
+      color: var(--text-bright);
+    }
+    .btn-icon.active {
+      background: rgba(6, 182, 212, 0.15);
+      border-color: var(--plasma-cyan);
+      color: var(--plasma-cyan);
+    }
+
+    /* ==========================================================================
+       3. SLIDE STAGE & CARD CONTAINER
+       ========================================================================== */
+    .stage-container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 1.5rem 1.25rem 2.5rem 1.25rem;
+      width: 100%;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      position: relative;
+    }
+
+    .slide-viewport {
+      background: var(--bg-primary);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-lg);
+      padding: 2rem;
+      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.6);
+      position: relative;
+      min-height: 520px;
+      display: flex;
+      flex-direction: column;
+      transition: opacity var(--transition-normal);
+    }
+
+    /* Slide Switcher Animation */
+    .slide-item {
+      display: none;
+      flex-direction: column;
+      gap: 1.25rem;
+      width: 100%;
+      opacity: 0;
+      transform: translateY(6px);
+      transition: opacity var(--transition-normal), transform var(--transition-normal);
+    }
+    .slide-item.active {
+      display: flex;
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .slide-badge-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      border-bottom: 1px solid var(--border-subtle);
+      padding-bottom: 0.65rem;
+    }
+
+    .slide-topic-badge {
+      font-size: 0.72rem;
+      font-family: var(--font-mono);
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--solar-amber);
+      background: rgba(245, 158, 11, 0.1);
+      padding: 0.2rem 0.6rem;
+      border-radius: var(--radius-full);
+      border: 1px solid rgba(245, 158, 11, 0.25);
+    }
+
+    .slide-title-group h2 {
+      font-size: 1.6rem;
+      font-weight: 800;
+      color: var(--text-bright);
+      letter-spacing: -0.015em;
+      line-height: 1.25;
+      margin-top: 0.25rem;
+    }
+
+    .slide-subtitle {
+      font-size: 0.95rem;
+      color: var(--plasma-cyan);
+      font-weight: 500;
+      margin-top: 0.25rem;
+    }
+
+    /* Standard Presentation Grid Layouts */
+    .content-grid-2col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.25rem;
+    }
+
+    .content-grid-3col {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1rem;
+    }
+
+    .content-grid-4col {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 0.85rem;
+    }
+
+    .info-card {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 1.15rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      font-size: 0.88rem;
+    }
+
+    .info-card h3 {
+      font-size: 0.98rem;
+      font-weight: 700;
+      color: var(--text-bright);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .info-card p {
+      color: var(--text-main);
+      line-height: 1.45;
+    }
+
+    .highlight-card {
+      background: rgba(6, 182, 212, 0.06);
+      border-color: rgba(6, 182, 212, 0.25);
+    }
+
+    .warning-card {
+      background: rgba(245, 158, 11, 0.06);
+      border-color: rgba(245, 158, 11, 0.25);
+    }
+
+    /* Key Metric Tag */
+    .metric-pill {
+      display: inline-flex;
+      align-items: baseline;
+      gap: 0.3rem;
+      font-family: var(--font-mono);
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: var(--solar-amber);
+      background: #090e1f;
+      padding: 0.25rem 0.55rem;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border-subtle);
+      width: fit-content;
+    }
+
+    /* Feature D: Interactive Sun-to-Earth Timeline Slider */
+    .timeline-interactive-box {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 1.25rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .timeline-range-slider {
+      width: 100%;
+      height: 8px;
+      border-radius: var(--radius-full);
+      background: #1e2c52;
+      outline: none;
+      cursor: pointer;
+      accent-color: var(--solar-amber);
+    }
+
+    .timeline-stage-readout {
+      background: #080d1e;
+      border: 1px solid rgba(6, 182, 212, 0.25);
+      border-radius: var(--radius-sm);
+      padding: 0.85rem 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+    }
+
+    /* Feature E: Comparison Controls (Slide 9) */
+    .comp-segmented-control {
+      display: inline-flex;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-sm);
+      padding: 0.25rem;
+      gap: 0.25rem;
+    }
+
+    .btn-comp-tab {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      padding: 0.45rem 0.95rem;
+      font-size: 0.8rem;
+      font-weight: 600;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      transition: all var(--transition-fast);
+      min-height: 38px;
+    }
+    .btn-comp-tab:hover {
+      color: var(--text-bright);
+    }
+    .btn-comp-tab.active {
+      background: var(--plasma-cyan);
+      color: var(--bg-void);
+    }
+
+    /* Feature F: Final Knowledge Check (Slide 10) */
+    .quiz-card {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 1.25rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .quiz-question-block {
+      border-bottom: 1px dashed var(--border-subtle);
+      padding-bottom: 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+    .quiz-question-block:last-child {
+      border-bottom: none;
+      padding-bottom: 0;
+    }
+
+    .quiz-q-title {
+      font-size: 0.92rem;
+      font-weight: 700;
+      color: var(--text-bright);
+    }
+
+    .quiz-options-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.45rem;
+    }
+
+    .quiz-option-label {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.65rem;
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      padding: 0.55rem 0.75rem;
+      border-radius: var(--radius-sm);
+      font-size: 0.84rem;
+      color: var(--text-main);
+      cursor: pointer;
+      transition: all var(--transition-fast);
+      min-height: 42px;
+    }
+    .quiz-option-label:hover {
+      background: var(--bg-card-hover);
+      border-color: var(--border-accent);
+    }
+    .quiz-option-label.is-correct {
+      border-color: var(--aurora-emerald);
+      background: rgba(16, 185, 129, 0.12);
+      color: #ffffff;
+    }
+    .quiz-option-label.is-incorrect {
+      border-color: var(--danger-rose);
+      background: rgba(244, 63, 94, 0.12);
+    }
+
+    .quiz-explanation-box {
+      font-size: 0.78rem;
+      color: var(--aditya-blue);
+      background: #090e1f;
+      border-left: 3px solid var(--plasma-cyan);
+      padding: 0.4rem 0.65rem;
+      border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+      margin-top: 0.35rem;
+      display: none;
+    }
+    .quiz-explanation-box.active {
+      display: block;
+    }
+
+    /* ==========================================================================
+       4. BOTTOM SLIDE NAVIGATION DOCK
+       ========================================================================== */
+    .pres-nav-dock {
+      margin-top: 1.25rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+
+    .nav-btn-group {
+      display: flex;
+      align-items: center;
+      gap: 0.65rem;
+    }
+
+    .btn-nav {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.45rem;
+      padding: 0.65rem 1.25rem;
+      font-size: 0.88rem;
+      font-weight: 700;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      border: 1px solid transparent;
+      min-height: 44px;
+      transition: all var(--transition-fast);
+      user-select: none;
+    }
+    .btn-nav-primary {
+      background: linear-gradient(135deg, var(--solar-amber), var(--solar-orange));
+      color: #ffffff;
+      box-shadow: 0 4px 14px rgba(245, 158, 11, 0.25);
+    }
+    .btn-nav-primary:hover:not(:disabled) {
+      filter: brightness(1.15);
+      transform: translateY(-1px);
+    }
+    .btn-nav-secondary {
+      background: var(--bg-card);
+      border-color: var(--border-subtle);
+      color: var(--text-main);
+    }
+    .btn-nav-secondary:hover:not(:disabled) {
+      background: var(--bg-card-hover);
+      border-color: var(--border-accent);
+      color: var(--text-bright);
+    }
+    .btn-nav:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+      transform: none !important;
+    }
+
+    /* Slide Dots Indicator */
+    .slide-dots-indicator {
+      display: flex;
+      align-items: center;
+      gap: 0.45rem;
+    }
+    .slide-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: var(--border-subtle);
+      border: none;
+      cursor: pointer;
+      padding: 0;
+      transition: all var(--transition-fast);
+    }
+    .slide-dot:hover {
+      background: var(--text-muted);
+    }
+    .slide-dot.active {
+      background: var(--solar-amber);
+      transform: scale(1.3);
+      box-shadow: 0 0 8px var(--solar-amber);
+    }
+
+    /* ==========================================================================
+       5. SLIDE JUMP DRAWER (FEATURE C) & PRESENTER NOTES (FEATURE G)
+       ========================================================================== */
+    .drawer-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(3, 5, 12, 0.85);
+      backdrop-filter: blur(8px);
+      z-index: 100;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 1.5rem;
+    }
+    .drawer-overlay.active {
+      display: flex;
+    }
+
+    .drawer-modal {
+      background: var(--bg-primary);
+      border: 1px solid var(--border-accent);
+      border-radius: var(--radius-lg);
+      max-width: 800px;
+      width: 100%;
+      max-height: 85vh;
+      overflow-y: auto;
+      padding: 1.5rem;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8);
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+    }
+
+    .drawer-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid var(--border-subtle);
+      padding-bottom: 0.75rem;
+    }
+    .drawer-header h3 {
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: var(--text-bright);
+    }
+
+    .drawer-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 0.75rem;
+    }
+
+    .drawer-slide-card {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 0.85rem;
+      cursor: pointer;
+      text-align: left;
+      transition: all var(--transition-fast);
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+    }
+    .drawer-slide-card:hover {
+      background: var(--bg-card);
+      border-color: var(--plasma-cyan);
+      transform: translateY(-2px);
+    }
+    .drawer-slide-card.active {
+      border-color: var(--solar-amber);
+      background: rgba(245, 158, 11, 0.1);
+    }
+    .drawer-slide-card .card-num {
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      color: var(--aditya-blue);
+      font-weight: 700;
+    }
+    .drawer-slide-card .card-name {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--text-bright);
+      line-height: 1.3;
+    }
+
+    /* Presenter Notes Collapsible Drawer (Feature G) */
+    .notes-drawer {
+      background: #060a17;
+      border-top: 1px solid var(--border-subtle);
+      padding: 1rem 1.25rem;
+      display: none;
+      position: sticky;
+      bottom: 0;
+      z-index: 30;
+      box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.4);
+    }
+    .notes-drawer.active {
+      display: block;
+    }
+    .notes-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+    }
+    .notes-heading {
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: var(--solar-amber);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+    .notes-body {
+      font-size: 0.86rem;
+      color: var(--text-main);
+      line-height: 1.45;
+    }
+
+    /* ==========================================================================
+       6. RESPONSIVE MEDIA QUERIES
+       ========================================================================== */
+    @media (max-width: 1024px) {
+      .content-grid-4col {
+        grid-template-columns: repeat(2, 1fr);
+      }
+      .content-grid-3col {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .stage-container {
+        padding: 1rem 0.75rem 2rem 0.75rem;
+      }
+      .slide-viewport {
+        padding: 1.25rem;
+        min-height: auto;
+      }
+      .content-grid-2col {
+        grid-template-columns: 1fr;
+      }
+      .content-grid-4col {
+        grid-template-columns: 1fr;
+      }
+      .slide-title-group h2 {
+        font-size: 1.3rem;
+      }
+      .pres-nav-dock {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      .nav-btn-group {
+        justify-content: space-between;
+      }
+      .slide-dots-indicator {
+        justify-content: center;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.001s !important;
+        transition-duration: 0.001s !important;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Screen Reader Skip Link -->
+  <a href="#main-slide-container" class="skip-link">Skip to Presentation Slide Content</a>
+
+  <!-- ==========================================================================
+       TOP NAVIGATION BAR & SLIDE PROGRESS DOCK
+       ========================================================================== -->
+  <header class="pres-header" role="banner">
+    <!-- Continuous Progress Line -->
+    <div class="progress-track" aria-hidden="true">
+      <div class="progress-fill" id="slide-progress-bar"></div>
+    </div>
+
+    <div class="header-inner">
+      <div class="brand-group">
+        <div class="brand-badge" aria-hidden="true">10</div>
+        <div class="brand-title">
+          <h1>Space Weather: From the Sun to Earth</h1>
+          <p>BSERC Project 2 &bull; Interactive Educational Presentation</p>
+        </div>
+      </div>
+
+      <div class="header-controls">
+        <nav class="project-nav" aria-label="Project Pages">
+          <a href="space-weather-dashboard.html" class="nav-pill" id="nav-link-dashboard">Study Dashboard</a>
+          <a href="sun-earth-model.html" class="nav-pill" id="nav-link-simulator">3D Simulator</a>
+          <a href="space-weather-presentation.html" class="nav-pill active" id="nav-link-presentation" aria-current="page">Presentation</a>
+        </nav>
+
+        <!-- Feature B: Slide Counter & Drawer Trigger -->
+        <button type="button" class="slide-counter-pill" id="btn-toggle-drawer" aria-label="Open slide jump overview drawer">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <rect x="3" y="3" width="7" height="7"/>
+            <rect x="14" y="3" width="7" height="7"/>
+            <rect x="14" y="14" width="7" height="7"/>
+            <rect x="3" y="14" width="7" height="7"/>
+          </svg>
+          <span id="slide-counter-text">Slide 1 / 10</span>
+        </button>
+
+        <!-- Feature G: Presenter Notes Toggle -->
+        <button type="button" class="btn-icon" id="btn-toggle-notes" aria-pressed="false" title="Toggle Presenter Speaking Notes (P)">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+            <polyline points="14 2 14 8 20 8"/>
+            <line x1="16" y1="13" x2="8" y2="13"/>
+            <line x1="16" y1="17" x2="8" y2="17"/>
+          </svg>
+          <span>Notes</span>
+        </button>
+
+        <!-- Feature H: Fullscreen Control -->
+        <button type="button" class="btn-icon" id="btn-fullscreen" title="Toggle Fullscreen Mode (F)">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/>
+          </svg>
+          <span id="fullscreen-btn-label">Fullscreen</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ==========================================================================
+       MAIN PRESENTATION STAGE (EXACTLY 10 SLIDES)
+       ========================================================================== -->
+  <main id="main-slide-container" class="stage-container" role="main" aria-label="Presentation Slide Deck">
+
+    <div class="slide-viewport" id="slide-deck-viewport">
+
+      <!-- ====================================================================
+           SLIDE 1: Title and Learning Objectives
+           ==================================================================== -->
+      <article class="slide-item active" id="slide-1" role="region" aria-label="Slide 1 of 10: Title and Learning Objectives">
+        <div class="slide-badge-row">
+          <span class="slide-topic-badge">Introduction &bull; System Framing</span>
+          <span style="font-size:0.75rem; color:var(--text-dim); font-family:monospace;">Slide 01 of 10</span>
+        </div>
+
+        <div class="slide-title-group">
+          <h2>Space Weather &mdash; From the Sun to Earth</h2>
+          <p class="slide-subtitle">How can activity on the Sun disrupt technology in near-Earth space and on the ground?</p>
+        </div>
+
+        <div class="content-grid-2col" style="margin-top:0.5rem;">
+          <!-- Left: Physical Framing & Pathway Diagram -->
+          <div class="info-card highlight-card">
+            <h3>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                <circle cx="12" cy="12" r="5"/>
+                <line x1="12" y1="1" x2="12" y2="3"/>
+                <line x1="12" y1="21" x2="12" y2="23"/>
+              </svg>
+              The 1 AU Physical Energy Cascade
+            </h3>
+            <p>Space weather encompasses the dynamic environmental conditions across the heliosphere driven by solar eruptions, solar wind, and interplanetary magnetic fields interacting with Earth's magnetosphere, ionosphere, and technological systems.</p>
+            
+            <!-- Simple SVG Sun-to-Earth Pathway Diagram -->
+            <div style="background:#040714; border:1px solid var(--border-subtle); border-radius:var(--radius-sm); padding:0.75rem; margin-top:0.5rem;">
+              <svg viewBox="0 0 500 70" width="100%" height="70" aria-label="Physical pathway: Sun to Interplanetary Medium to Aditya-L1 to Earth">
+                <circle cx="35" cy="35" r="22" fill="#f59e0b" stroke="#fbbf24" stroke-width="2"/>
+                <text x="35" y="40" fill="#070b19" font-size="9" font-weight="bold" text-anchor="middle">SUN</text>
+                
+                <!-- Propagating disturbance wave -->
+                <line x1="62" y1="35" x2="415" y2="35" stroke="#06b6d4" stroke-dasharray="6, 4" stroke-width="2"/>
+                <polygon points="415,30 425,35 415,40" fill="#06b6d4"/>
+
+                <!-- L1 Marker -->
+                <circle cx="370" cy="35" r="6" fill="#38bdf8" stroke="#ffffff" stroke-width="1.5"/>
+                <text x="370" y="55" fill="#38bdf8" font-size="8" font-family="monospace" text-anchor="middle">Aditya-L1</text>
+
+                <!-- Earth -->
+                <circle cx="460" cy="35" r="14" fill="#1d4ed8" stroke="#60a5fa" stroke-width="2"/>
+                <path d="M 442 15 Q 432 35 442 55" fill="none" stroke="#06b6d4" stroke-width="2"/>
+                <text x="460" y="62" fill="#60a5fa" font-size="8" font-weight="bold" text-anchor="middle">EARTH</text>
+              </svg>
+            </div>
+          </div>
+
+          <!-- Right: Three Learning Objectives -->
+          <div class="info-card">
+            <h3>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                <polyline points="9 11 12 14 22 4"/>
+                <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
+              </svg>
+              Three Core Learning Objectives
+            </h3>
+            <ul style="padding-left:1.2rem; display:flex; flex-direction:column; gap:0.6rem; color:var(--text-main); font-size:0.86rem;">
+              <li><strong>Distinguish the 3 Solar Drivers:</strong> Differentiate solar flares (photons), coronal mass ejections (bulk plasma), and the continuous solar wind by physical composition and transit times.</li>
+              <li><strong>Trace Geospace Coupling & Technologies:</strong> Analyze how geomagnetic reconnection and ionospheric ionization trigger satellite drag, GPS scintillation, HF radio absorption, and transformer GICs.</li>
+              <li><strong>Evaluate Aditya-L1's Upstream Role:</strong> Understand how India's first solar observatory at Sun–Earth L1 combines remote-sensing (VELC/SUIT) and in-situ (ASPEX/PAPA/MAG) instruments for space weather science.</li>
+            </ul>
+          </div>
+        </div>
+      </article>
+
+      <!-- ====================================================================
+           SLIDE 2: Three Solar Drivers Compared
+           ==================================================================== -->
+      <article class="slide-item" id="slide-2" role="region" aria-label="Slide 2 of 10: Three Solar Drivers">
+        <div class="slide-badge-row">
+          <span class="slide-topic-badge">Solar Phenomena &bull; Physical Distinction</span>
+          <span style="font-size:0.75rem; color:var(--text-dim); font-family:monospace;">Slide 02 of 10</span>
+        </div>
+
+        <div class="slide-title-group">
+          <h2>Three Distinct Solar Drivers</h2>
+          <p class="slide-subtitle">Distinguishing the physical nature, propagation velocities, and mechanisms of solar activity</p>
+        </div>
+
+        <div class="content-grid-3col" style="margin-top:0.5rem;">
+          <!-- Driver 1: Flares -->
+          <div class="info-card warning-card">
+            <div class="metric-pill">Photons &bull; Speed of Light (c)</div>
+            <h3 style="color:var(--solar-flare);">1. Solar Flares</h3>
+            <p><strong>Physical Nature:</strong> Intense localized bursts of electromagnetic radiation (radio to soft/hard X-rays) generated by coronal magnetic reconnection.</p>
+            <p><strong>Transit Time:</strong> Approximately 8.3 minutes to reach 1 AU.</p>
+            <p><strong>Primary Geospace Target:</strong> Immediate ionization of the sunlit upper atmosphere (ionospheric D-region).</p>
+          </div>
+
+          <!-- Driver 2: CMEs -->
+          <div class="info-card" style="border-color:rgba(234, 88, 12, 0.35); background:rgba(234, 88, 12, 0.05);">
+            <div class="metric-pill" style="color:var(--solar-orange);">Bulk Magnetized Plasma</div>
+            <h3 style="color:var(--solar-orange);">2. Coronal Mass Ejections</h3>
+            <p><strong>Physical Nature:</strong> Ejection of up to 10<sup>12</sup> kg of magnetized plasma and twisted flux ropes from coronal active regions.</p>
+            <p><strong>Transit Time:</strong> 16 to 24 hours (extreme fast events) to 3–5 days (ambient CMEs).</p>
+            <p><strong>Primary Geospace Target:</strong> Magnetopause compression, ring current injection, and global geomagnetic storms.</p>
+          </div>
+
+          <!-- Driver 3: Solar Wind -->
+          <div class="info-card highlight-card">
+            <div class="metric-pill" style="color:var(--plasma-cyan);">Continuous Ambient Outflow</div>
+            <h3 style="color:var(--plasma-cyan);">3. Continuous Solar Wind</h3>
+            <p><strong>Physical Nature:</strong> Supersonic plasma stream (protons, electrons, ~4% alpha particles) flowing outward from open coronal magnetic fields.</p>
+            <p><strong>Transit Velocity:</strong> Slow streams (~300–400 km/s) and fast streams from coronal holes (~700–800 km/s).</p>
+            <p><strong>Primary Geospace Target:</strong> Establishes the background Parker spiral field and dynamic pressure shaping Earth's magnetosphere.</p>
+          </div>
+        </div>
+      </article>
+
+      <!-- ====================================================================
+           SLIDE 3: Solar Flares and Radiation
+           ==================================================================== -->
+      <article class="slide-item" id="slide-3" role="region" aria-label="Slide 3 of 10: Solar Flares and Radiation">
+        <div class="slide-badge-row">
+          <span class="slide-topic-badge">Electromagnetic Physics &bull; Ionosphere</span>
+          <span style="font-size:0.75rem; color:var(--text-dim); font-family:monospace;">Slide 03 of 10</span>
+        </div>
+
+        <div class="slide-title-group">
+          <h2>Solar Flares & Electromagnetic Radiation</h2>
+          <p class="slide-subtitle">Coronal magnetic reconnection, speed-of-light propagation, and ionospheric radio blackouts</p>
+        </div>
+
+        <div class="content-grid-2col" style="margin-top:0.5rem;">
+          <div class="info-card">
+            <h3>Magnetic Reconnection & Flare Classification</h3>
+            <p>Solar flares originate in active regions where opposing magnetic field lines break and cross-connect, converting stored magnetic free energy into thermal kinetic energy and particle acceleration (CSHKP model).</p>
+            <p>GOES satellites classify flares in the 1–8 &Aring; soft X-ray band: <strong>A, B, C, M, and intense X-class</strong> (>10<sup>-4</sup> W/m<sup>2</sup>). Each step represents a tenfold increase in energy flux.</p>
+            <div class="metric-pill" style="margin-top:0.4rem;">Transit Time: Exactly (149.6M km / 300,000 km/s) &approx; 8.3 minutes</div>
+          </div>
+
+          <div class="info-card warning-card">
+            <h3>Sunlit Ionospheric Absorption & Radio Blackouts</h3>
+            <p>Because flare radiation travels at the speed of light ($c$), it reaches Earth in approximately 8.3 minutes with zero physical early warning.</p>
+            <p>Hard EUV and soft X-rays penetrate deep into the normally neutral <strong>ionospheric D-region (60–90 km)</strong>. The resulting surge in electron density causes high collision frequencies that absorb High-Frequency (HF, 3–30 MHz) radio waves rather than refracting them.</p>
+            <div style="background:#090e1f; border-left:3px solid var(--solar-amber); padding:0.5rem; font-size:0.8rem; margin-top:0.5rem;">
+              <strong>Scientific Nuance:</strong> A flare causes immediate radio blackouts on Earth's sunlit hemisphere, but <em>does not inherently trigger a geomagnetic storm</em> unless an Earth-directed CME accompanies it.
+            </div>
+          </div>
+        </div>
+      </article>
+
+      <!-- ====================================================================
+           SLIDE 4: Coronal Mass Ejections (CMEs)
+           ==================================================================== -->
+      <article class="slide-item" id="slide-4" role="region" aria-label="Slide 4 of 10: Coronal Mass Ejections">
+        <div class="slide-badge-row">
+          <span class="slide-topic-badge">Plasma Dynamics &bull; Heliospheric Drag</span>
+          <span style="font-size:0.75rem; color:var(--text-dim); font-family:monospace;">Slide 04 of 10</span>
+        </div>
+
+        <div class="slide-title-group">
+          <h2>Coronal Mass Ejections (CMEs) & Propagation</h2>
+          <p class="slide-subtitle">Magnetic flux rope kinematics, transit variability, and the critical role of IMF Bz orientation</p>
+        </div>
+
+        <div class="content-grid-2col" style="margin-top:0.5rem;">
+          <div class="info-card">
+            <h3>Kinematics & Heliospheric Aerodynamic Drag</h3>
+            <p>CMEs erupt with speeds ranging from 300 km/s to over 2,500 km/s. As they traverse 1 AU, they interact with the ambient solar wind via aerodynamic drag forces:</p>
+            <ul style="padding-left:1.2rem; font-size:0.85rem; display:flex; flex-direction:column; gap:0.4rem; color:var(--text-main);">
+              <li><strong>Slow CMEs (&lt;400 km/s):</strong> Drag accelerates them toward background solar wind speeds.</li>
+              <li><strong>Fast CMEs (&gt;1,000 km/s):</strong> Drag decelerates them, driving strong collisionless forward shock waves.</li>
+            </ul>
+            <p style="margin-top:0.3rem;">Transit times vary widely: ~16–24 hours for extreme Carrington-class events versus 3 to 5 days for moderate eruptions.</p>
+          </div>
+
+          <div class="info-card highlight-card">
+            <h3>Why Magnetic Orientation (Bz) Determines Impact</h3>
+            <p>A fast CME colliding with Earth is a <em>necessary</em> but not <em>sufficient</em> condition for a severe geomagnetic storm. The geoeffectiveness is governed by the <strong>Interplanetary Magnetic Field (IMF) $B_z$ component</strong>:</p>
+            <div style="background:#090e1f; border:1px solid var(--border-subtle); padding:0.6rem; border-radius:var(--radius-sm); margin:0.4rem 0;">
+              <p style="font-size:0.82rem;"><strong>Southward IMF ($B_z &lt; 0$):</strong> Reconnects antiparallel with Earth's northward geomagnetic field, opening the magnetospheric gateway and dumping terawatts of solar energy into the ring current.</p>
+              <p style="font-size:0.82rem; margin-top:0.3rem; color:var(--text-muted);"><strong>Northward IMF ($B_z &gt; 0$):</strong> Reconnection is largely suppressed at the subsolar point; geomagnetic activity remains quiet to minor.</p>
+            </div>
+            <p style="font-size:0.8rem; color:var(--solar-orange);"><em>Crucial Caveat: Speed alone does not predict storm severity; Bz cannot be observed until the plasma arrives at in-situ sensors like Aditya-L1.</em></p>
+          </div>
+        </div>
+      </article>
+
+      <!-- ====================================================================
+           SLIDE 5: Solar Wind & Parker Spiral
+           ==================================================================== -->
+      <article class="slide-item" id="slide-5" role="region" aria-label="Slide 5 of 10: Solar Wind">
+        <div class="slide-badge-row">
+          <span class="slide-topic-badge">Heliospheric Physics &bull; Continuous Flow</span>
+          <span style="font-size:0.75rem; color:var(--text-dim); font-family:monospace;">Slide 05 of 10</span>
+        </div>
+
+        <div class="slide-title-group">
+          <h2>The Solar Wind & The Parker Spiral</h2>
+          <p class="slide-subtitle">The continuous supersonic heliospheric outflow, coronal holes, and stream interaction regions</p>
+        </div>
+
+        <div class="content-grid-2col" style="margin-top:0.5rem;">
+          <div class="info-card">
+            <h3>Continuous Supersonic Plasma Outflow</h3>
+            <p>First predicted theoretically by Eugene Parker in 1958, the solar wind is the continuous hydrodynamic expansion of the solar corona into interplanetary space.</p>
+            <p>Because the Sun rotates on its axis once every ~27 days while continuously expelling plasma radially, the embedded solar magnetic field is wound into an Archimedean spiral known as the <strong>Parker Spiral</strong>. At 1 AU, the magnetic field intersects Earth's orbital plane at an angle of approximately 45 degrees.</p>
+          </div>
+
+          <div class="info-card">
+            <h3>Fast Streams, Coronal Holes & CIRs</h3>
+            <p><strong>Fast Wind (~700–800 km/s):</strong> Emanates from unipolar open magnetic field lines in solar coronal holes. Low density, high temperature, and steady flow.</p>
+            <p><strong>Slow Wind (~300–400 km/s):</strong> Originates near coronal streamers and active region boundaries. Higher density and dynamic fluctuations.</p>
+            <p>When a fast solar wind stream overtakes a preceding slow stream, a compressed boundary layer called a <strong>Co-rotating Interaction Region (CIR)</strong> forms, capable of triggering recurrent G1–G2 geomagnetic storms even during solar minimum.</p>
+          </div>
+        </div>
+      </article>
+
+      <!-- ====================================================================
+           SLIDE 6: The Sun–Earth Connection (Timeline Module)
+           ==================================================================== -->
+      <article class="slide-item" id="slide-6" role="region" aria-label="Slide 6 of 10: The Sun–Earth Connection and Interactive Timeline">
+        <div class="slide-badge-row">
+          <span class="slide-topic-badge">Interactive Timeline &bull; Feature D</span>
+          <span style="font-size:0.75rem; color:var(--text-dim); font-family:monospace;">Slide 06 of 10</span>
+        </div>
+
+        <div class="slide-title-group">
+          <h2>The Sun–Earth Physical Connection</h2>
+          <p class="slide-subtitle">Interactive 1 AU propagation timeline from coronal origin to magnetospheric response</p>
+        </div>
+
+        <!-- Feature D: Interactive Sun-to-Earth Timeline -->
+        <div class="timeline-interactive-box" style="margin-top:0.4rem;">
+          <div style="display:flex; justify-content:space-between; align-items:baseline; flex-wrap:wrap;">
+            <label for="timeline-stage-slider" style="font-size:0.86rem; font-weight:700; color:var(--text-bright);">
+              Scrub Propagation Stage (1 to 5):
+            </label>
+            <span class="metric-pill" id="timeline-stage-pill">Stage 1 of 5: Solar Eruption</span>
+          </div>
+
+          <input type="range" id="timeline-stage-slider" class="timeline-range-slider" min="1" max="5" step="1" value="1" aria-label="Sun to Earth propagation stage slider">
+
+          <div style="display:flex; justify-content:space-between; font-family:var(--font-mono); font-size:0.72rem; color:var(--text-dim);">
+            <span>1. Sun Origin</span>
+            <span>2. 1 AU Transit</span>
+            <span>3. L1 Sentinel</span>
+            <span>4. Geospace</span>
+            <span>5. Impacts</span>
+          </div>
+
+          <div class="timeline-stage-readout" id="timeline-stage-card" aria-live="polite">
+            <h3 style="font-size:1.05rem; color:var(--solar-amber);" id="timeline-readout-title">Stage 1: Solar Origin (Coronal Active Regions)</h3>
+            <p style="font-size:0.86rem;" id="timeline-readout-desc">Magnetic reconnection in complex sunspot active regions triggers explosive energy releases: flare photons leave immediately at c, while plasma flux ropes accelerate into the low corona.</p>
+            <div style="display:flex; gap:0.5rem; margin-top:0.3rem; flex-wrap:wrap;">
+              <span class="metric-pill" id="timeline-readout-time" style="color:var(--plasma-cyan);">Time Elapsed: 0.0 hrs</span>
+              <span style="font-size:0.74rem; color:var(--text-dim); align-self:center;">*Educational conceptual model, not live monitoring.</span>
+            </div>
+          </div>
+        </div>
+      </article>
+
+      <!-- ====================================================================
+           SLIDE 7: Four Technology Impact Areas
+           ==================================================================== -->
+      <article class="slide-item" id="slide-7" role="region" aria-label="Slide 7 of 10: Four Technology Impact Areas">
+        <div class="slide-badge-row">
+          <span class="slide-topic-badge">Infrastructure Vulnerabilities &bull; Engineering Mechanisms</span>
+          <span style="font-size:0.75rem; color:var(--text-dim); font-family:monospace;">Slide 07 of 10</span>
+        </div>
+
+        <div class="slide-title-group">
+          <h2>Four Technology Vulnerability Domains</h2>
+          <p class="slide-subtitle">How space weather drivers map into specific engineering failure mechanisms</p>
+        </div>
+
+        <div class="content-grid-4col" style="margin-top:0.5rem;">
+          <!-- 1. Satellites -->
+          <div class="info-card">
+            <h3 style="color:var(--infra-purple);">1. Satellites</h3>
+            <p><strong>Driver:</strong> Relativistic electrons & EUV heating.</p>
+            <p><strong>Mechanism:</strong> Internal electrostatic discharge from MeV electrons in outer radiation belt; surface differential charging from keV plasma; atmospheric expansion causing increased drag on LEO orbits.</p>
+            <p><strong>Consequence:</strong> Phantom commands, solar array degradation, or premature orbital re-entry (e.g., Starlink loss in 2022).</p>
+          </div>
+
+          <!-- 2. GNSS / GPS -->
+          <div class="info-card">
+            <h3 style="color:var(--plasma-cyan);">2. GPS / GNSS</h3>
+            <p><strong>Driver:</strong> Ionospheric irregularities & TEC.</p>
+            <p><strong>Mechanism:</strong> Rapid amplitude and phase variations (scintillation) across L-band signals passing through turbulent ionospheric plasma bubbles; total electron content gradients.</p>
+            <p><strong>Consequence:</strong> Loss-of-lock for receivers; positioning errors of tens of meters affecting precision agriculture, aviation, and surveying.</p>
+          </div>
+
+          <!-- 3. HF Radio -->
+          <div class="info-card">
+            <h3 style="color:var(--solar-amber);">3. HF Radio</h3>
+            <p><strong>Driver:</strong> Solar flare soft X-rays.</p>
+            <p><strong>Mechanism:</strong> Rapid photoionization of neutral nitric oxide in the D-region (60–90 km), causing dense electron collisions that attenuate 3–30 MHz radio waves.</p>
+            <p><strong>Consequence:</strong> Complete loss of transoceanic aviation communication and emergency shortwave broadcasts over sunlit hemisphere.</p>
+          </div>
+
+          <!-- 4. Power Grids -->
+          <div class="info-card">
+            <h3 style="color:var(--danger-rose);">4. Power Grids</h3>
+            <p><strong>Driver:</strong> Geomagnetic variations ($dB/dt$).</p>
+            <p><strong>Mechanism:</strong> Rapid magnetic fluctuations induce geoelectric fields in Earth's crust that drive quasi-DC geomagnetically induced currents (GICs) into grounded transformers.</p>
+            <p><strong>Consequence:</strong> Half-cycle core saturation, severe overheating, harmonic distortion, and cascading voltage collapse (e.g., Quebec 1989).</p>
+          </div>
+        </div>
+      </article>
+
+      <!-- ====================================================================
+           SLIDE 8: India's Aditya-L1 Mission
+           ==================================================================== -->
+      <article class="slide-item" id="slide-8" role="region" aria-label="Slide 8 of 10: India's Aditya-L1 Mission">
+        <div class="slide-badge-row">
+          <span class="slide-topic-badge">ISRO Observatory &bull; Sun–Earth L1</span>
+          <span style="font-size:0.75rem; color:var(--text-dim); font-family:monospace;">Slide 08 of 10</span>
+        </div>
+
+        <div class="slide-title-group">
+          <h2>India's Aditya-L1 Mission at Sun–Earth L1</h2>
+          <p class="slide-subtitle">Uninterrupted solar observation and upstream in-situ space weather sensing</p>
+        </div>
+
+        <div class="content-grid-2col" style="margin-top:0.4rem;">
+          <!-- Left: Mission Architecture & Halo Orbit -->
+          <div class="info-card highlight-card">
+            <h3>Halo Orbit Around Lagrangian Point 1</h3>
+            <p>Launched by ISRO on September 2, 2023, Aditya-L1 is stationed in a halo orbit around the Sun–Earth L1 point, approximately <strong>1.5 million km</strong> upstream of Earth (~0.01 AU).</p>
+            <p><strong>Strategic Scientific Advantages:</strong></p>
+            <ul style="padding-left:1.2rem; font-size:0.84rem; display:flex; flex-direction:column; gap:0.35rem; color:var(--text-main);">
+              <li>Continuous, eclipse-free view of the Sun with zero occultations by Earth.</li>
+              <li>Positioned outside Earth's magnetosphere, allowing undisturbed sampling of interplanetary solar wind plasma and magnetic fields.</li>
+              <li>Provides an illustrative 15 to 60 minute in-situ early warning window before disturbances impact Earth's magnetosphere.</li>
+            </ul>
+          </div>
+
+          <!-- Right: The 7 Scientific Payloads -->
+          <div class="info-card">
+            <h3>Seven Coordinated Scientific Payloads</h3>
+            <div style="display:flex; flex-direction:column; gap:0.4rem; font-size:0.8rem;">
+              <div style="background:#090e1f; padding:0.4rem 0.6rem; border-radius:var(--radius-sm); border-left:3px solid var(--solar-amber);">
+                <strong>Remote Sensing (4):</strong>
+                <ul style="padding-left:1rem; margin-top:0.2rem;">
+                  <li><strong>VELC (IIA):</strong> Visible Emission Line Coronagraph (coronal dynamics down to 1.05 R<sub>&#9737;</sub>).</li>
+                  <li><strong>SUIT (IUCAA):</strong> Solar Ultraviolet Imaging Telescope (photosphere & chromosphere).</li>
+                  <li><strong>SoLEXS (URSC):</strong> Soft X-ray Spectrometer (soft X-ray flares).</li>
+                  <li><strong>HEL1OS (URSC):</strong> Hard X-ray Spectrometer (non-thermal flare acceleration).</li>
+                </ul>
+              </div>
+              <div style="background:#090e1f; padding:0.4rem 0.6rem; border-radius:var(--radius-sm); border-left:3px solid var(--plasma-cyan);">
+                <strong>In-Situ Measurement (3):</strong>
+                <ul style="padding-left:1rem; margin-top:0.2rem;">
+                  <li><strong>ASPEX (PRL):</strong> Aditya Solar wind Particle Exp (protons & alphas).</li>
+                  <li><strong>PAPA (VSSC):</strong> Plasma Analyser Package for Aditya (electrons & ions).</li>
+                  <li><strong>MAG (LEOS):</strong> Dual 8-meter boom fluxgate magnetometer measuring IMF B<sub>z</sub>.</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      </article>
+
+      <!-- ====================================================================
+           SLIDE 9: Interactive Scientific Comparison (Feature E)
+           ==================================================================== -->
+      <article class="slide-item" id="slide-9" role="region" aria-label="Slide 9 of 10: Interactive Scientific Comparison">
+        <div class="slide-badge-row">
+          <span class="slide-topic-badge">Comparative Analysis &bull; Feature E</span>
+          <span style="font-size:0.75rem; color:var(--text-dim); font-family:monospace;">Slide 09 of 10</span>
+        </div>
+
+        <div class="slide-title-group" style="display:flex; justify-content:space-between; align-items:baseline; flex-wrap:wrap; gap:0.5rem;">
+          <div>
+            <h2>Interactive Scientific Comparisons</h2>
+            <p class="slide-subtitle">Evaluate qualitative differences across phenomena and solar cycle phases</p>
+          </div>
+          <!-- Feature E Controls -->
+          <div class="comp-segmented-control" role="group" aria-label="Comparison Selection">
+            <button type="button" class="btn-comp-tab active" id="btn-comp-flare-cme" aria-pressed="true">A. Flare vs. CME</button>
+            <button type="button" class="btn-comp-tab" id="btn-comp-min-max" aria-pressed="false">B. Solar Min vs. Max</button>
+          </div>
+        </div>
+
+        <!-- Dynamic Comparison Content Container -->
+        <div id="comparison-content-view" style="margin-top:0.6rem;">
+          <!-- View A: Flare vs. CME (Default) -->
+          <div class="content-grid-2col" id="view-flare-cme">
+            <div class="info-card warning-card">
+              <h3 style="color:var(--solar-flare);">Solar Flares (Electromagnetic)</h3>
+              <p><strong>Physical Nature:</strong> High-energy photons (EUV, soft/hard X-rays).</p>
+              <p><strong>Velocity:</strong> Speed of light ($c \approx 300{,}000\text{ km/s}$).</p>
+              <p><strong>Earth Arrival:</strong> Approximately 8.3 minutes.</p>
+              <p><strong>Primary Vulnerability:</strong> Immediate sunlit D-region ionization; HF radio blackouts and GNSS signal attenuation.</p>
+              <p><strong>Geomagnetic Severity:</strong> Zero direct magnetic disturbance; cannot trigger geomagnetic storm alone.</p>
+            </div>
+
+            <div class="info-card" style="border-color:rgba(234, 88, 12, 0.35); background:rgba(234, 88, 12, 0.05);">
+              <h3 style="color:var(--solar-orange);">Coronal Mass Ejections (Plasma)</h3>
+              <p><strong>Physical Nature:</strong> Up to $10^{12}\text{ kg}$ of ionized plasma and helical magnetic flux ropes.</p>
+              <p><strong>Velocity:</strong> 300 to 2,500+ km/s.</p>
+              <p><strong>Earth Arrival:</strong> 16 hours (extreme fast) to 3–5 days (ambient).</p>
+              <p><strong>Primary Vulnerability:</strong> Magnetopause compression, auroral expansion, satellite drag, and ground GICs.</p>
+              <p><strong>Geomagnetic Severity:</strong> Can drive severe G1–G5 geomagnetic storms <em>if IMF $B_z$ is southward</em>.</p>
+            </div>
+          </div>
+
+          <!-- View B: Solar Min vs. Max (Hidden by default) -->
+          <div class="content-grid-2col" id="view-min-max" style="display:none;">
+            <div class="info-card">
+              <h3 style="color:var(--plasma-cyan);">Solar Minimum (Quiet Sun)</h3>
+              <p><strong>Sunspot Number:</strong> Very few or zero sunspots for consecutive weeks.</p>
+              <p><strong>Magnetic Field:</strong> Dipole-dominated, smooth coronal magnetic structure.</p>
+              <p><strong>Activity Frequency:</strong> CMEs occur approximately once every few days; X-class flares are rare.</p>
+              <p><strong>Key Driver:</strong> Stable coronal holes driving high-speed solar wind streams and recurrent Co-rotating Interaction Regions (CIRs).</p>
+            </div>
+
+            <div class="info-card warning-card">
+              <h3 style="color:var(--solar-amber);">Solar Maximum (Active Sun)</h3>
+              <p><strong>Sunspot Number:</strong> Abundant, complex multi-polar active regions ($\beta\gamma\delta$).</p>
+              <p><strong>Magnetic Field:</strong> Highly twisted, sheared, multipolar coronal loops.</p>
+              <p><strong>Activity Frequency:</strong> Multiple CMEs per day (3–5+); frequent M- and X-class flares.</p>
+              <p><strong>Historical Precaution:</strong> Extreme historical events (such as the 1859 Carrington Event) typically occur near solar maximum, but severe space weather can occur unexpectedly outside peak years.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Historical Grounding Note (Carrington Event 1859) -->
+        <div style="background:#080d1e; border:1px solid var(--border-subtle); border-radius:var(--radius-sm); padding:0.65rem 0.85rem; font-size:0.78rem; color:var(--text-muted); margin-top:0.6rem;">
+          <strong>Historical Context (Carrington Event 1859):</strong> An extreme solar flare observed by Richard Carrington on 1 Sept 1859 launched a CME that traversed 1 AU in just ~17.6 hours (~2,300 km/s). The resulting superstorm induced powerful currents in telegraph wires that shocked operators and ignited telegraph papers. Modern analogues highlight vulnerabilities in interconnected electrical power grids and satellite constellations (Royal Academy of Engineering, 2013).
+        </div>
+      </article>
+
+      <!-- ====================================================================
+           SLIDE 10: Conclusion & Knowledge Check (Feature F)
+           ==================================================================== -->
+      <article class="slide-item" id="slide-10" role="region" aria-label="Slide 10 of 10: Summary and Final Knowledge Check">
+        <div class="slide-badge-row">
+          <span class="slide-topic-badge">Assessment &bull; Feature F Knowledge Check</span>
+          <span style="font-size:0.75rem; color:var(--text-dim); font-family:monospace;">Slide 10 of 10</span>
+        </div>
+
+        <div class="slide-title-group">
+          <h2>Summary & Interactive Knowledge Check</h2>
+          <p class="slide-subtitle">Synthesize the physical cascade from the Sun to Earth and verify conceptual mastery</p>
+        </div>
+
+        <div class="quiz-card" style="margin-top:0.4rem;">
+          <form id="presentation-quiz-form">
+            <!-- Q1 -->
+            <div class="quiz-question-block">
+              <p class="quiz-q-title">1. What fundamentally distinguishes the physical nature of a solar flare from a Coronal Mass Ejection (CME)?</p>
+              <div class="quiz-options-group">
+                <label class="quiz-option-label"><input type="radio" name="q1" value="0"> A flare is bulk plasma, while a CME is composed purely of energetic photons.</label>
+                <label class="quiz-option-label"><input type="radio" name="q1" value="1"> A flare is electromagnetic radiation ($c \approx 300{,}000\text{ km/s}$), while a CME is bulk magnetized plasma ($300\text{–}2500\text{ km/s}$).</label>
+                <label class="quiz-option-label"><input type="radio" name="q1" value="2"> Flares only happen at solar minimum, while CMEs only occur at solar maximum.</label>
+                <label class="quiz-option-label"><input type="radio" name="q1" value="3"> Flares trigger ground transformer GICs, while CMEs only affect radio frequencies.</label>
+              </div>
+              <div class="quiz-explanation-box" id="q1-expl"><strong>Explanation:</strong> Solar flares are bursts of electromagnetic radiation traveling at the speed of light (~8.3 mins to Earth). CMEs are physical expulsions of billions of tons of magnetized plasma traveling slower over hours to days.</div>
+            </div>
+
+            <!-- Q2 -->
+            <div class="quiz-question-block">
+              <p class="quiz-q-title">2. Approximately how long does electromagnetic radiation from a solar flare take to reach Earth?</p>
+              <div class="quiz-options-group">
+                <label class="quiz-option-label"><input type="radio" name="q2" value="0"> Approximately 8.3 minutes ($t = d/c$).</label>
+                <label class="quiz-option-label"><input type="radio" name="q2" value="1"> Instantaneous (0 seconds).</label>
+                <label class="quiz-option-label"><input type="radio" name="q2" value="2"> Approximately 18 to 24 hours.</label>
+                <label class="quiz-option-label"><input type="radio" name="q2" value="3"> 3 to 5 days.</label>
+              </div>
+              <div class="quiz-explanation-box" id="q2-expl"><strong>Explanation:</strong> Light traverses the 149.6 million km Sun-Earth distance ($1\text{ AU}$) at $299{,}792\text{ km/s}$ in approximately 498.7 seconds, or ~8.3 minutes.</div>
+            </div>
+
+            <!-- Q3 -->
+            <div class="quiz-question-block">
+              <p class="quiz-q-title">3. Why is a southward Interplanetary Magnetic Field ($B_z &lt; 0$) critical for a CME to trigger a severe geomagnetic storm?</p>
+              <div class="quiz-options-group">
+                <label class="quiz-option-label"><input type="radio" name="q3" value="0"> It accelerates solar photons beyond the speed of light.</label>
+                <label class="quiz-option-label"><input type="radio" name="q3" value="1"> It reconnects antiparallel with Earth's northward magnetic field, opening the magnetospheric energy gateway.</label>
+                <label class="quiz-option-label"><input type="radio" name="q3" value="2"> It prevents plasma from interacting with Earth's atmosphere.</label>
+                <label class="quiz-option-label"><input type="radio" name="q3" value="3"> It neutralizes ground electrical power grid currents.</label>
+              </div>
+              <div class="quiz-explanation-box" id="q3-expl"><strong>Explanation:</strong> Earth's internal dipole points northward at the subsolar magnetopause. Antiparallel southward IMF ($B_z &lt; 0$) enables magnetic reconnection (Dungey cycle), injecting solar wind energy into the geospace system.</div>
+            </div>
+
+            <!-- Q4 -->
+            <div class="quiz-question-block">
+              <p class="quiz-q-title">4. Where is India's Aditya-L1 solar observatory stationed to perform early warning measurements?</p>
+              <div class="quiz-options-group">
+                <label class="quiz-option-label"><input type="radio" name="q4" value="0"> Low Earth Orbit (LEO) at 400 km altitude.</label>
+                <label class="quiz-option-label"><input type="radio" name="q4" value="1"> In a halo orbit around the Sun–Earth L1 point (~1.5 million km upstream of Earth).</label>
+                <label class="quiz-option-label"><input type="radio" name="q4" value="2"> Geostationary Earth Orbit (GEO) at 35,786 km.</label>
+                <label class="quiz-option-label"><input type="radio" name="q4" value="3"> On the surface of the Moon.</label>
+              </div>
+              <div class="quiz-explanation-box" id="q4-expl"><strong>Explanation:</strong> Aditya-L1 operates in a halo orbit around Sun–Earth L1, approximately 1.5 million km upstream, allowing continuous solar viewing and in-situ sampling outside Earth's magnetosphere.</div>
+            </div>
+
+            <!-- Q5 -->
+            <div class="quiz-question-block">
+              <p class="quiz-q-title">5. What physical mechanism causes high-voltage power grid transformer failures during geomagnetic storms?</p>
+              <div class="quiz-options-group">
+                <label class="quiz-option-label"><input type="radio" name="q5" value="0"> Direct physical impact of energetic solar protons on power lines.</label>
+                <label class="quiz-option-label"><input type="radio" name="q5" value="1"> Rapid $dB/dt$ geomagnetic variations inducing quasi-DC currents (GICs) that cause half-cycle core saturation.</label>
+                <label class="quiz-option-label"><input type="radio" name="q5" value="2"> Atmospheric vacuum freezing transmission line coolant.</label>
+                <label class="quiz-option-label"><input type="radio" name="q5" value="3"> Solar flare ultraviolet light melting overhead wire insulation.</label>
+              </div>
+              <div class="quiz-explanation-box" id="q5-expl"><strong>Explanation:</strong> Rapid fluctuations in Earth's geomagnetic field ($dB/dt$) induce regional geoelectric fields that drive quasi-DC geomagnetically induced currents (GICs) through grounded transformer neutrals, causing half-cycle core saturation, severe overheating, and grid voltage collapse.</div>
+            </div>
+
+            <!-- Quiz Controls & Score Readout -->
+            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.75rem; margin-top:0.75rem;">
+              <div style="display:flex; gap:0.5rem;">
+                <button type="button" class="btn-nav btn-nav-primary" id="btn-quiz-submit">Submit Answers</button>
+                <button type="button" class="btn-nav btn-nav-secondary" id="btn-quiz-retry" style="display:none;">Retake Quiz</button>
+              </div>
+              <div id="quiz-score-banner" style="font-family:var(--font-mono); font-size:0.9rem; font-weight:700; color:var(--text-muted);">
+                Select your answers and click Submit.
+              </div>
+            </div>
+          </form>
+        </div>
+      </article>
+
+    </div>
+
+    <!-- ====================================================================
+         BOTTOM NAVIGATION DOCK (PREV / NEXT / DOTS)
+         ==================================================================== -->
+    <nav class="pres-nav-dock" aria-label="Slide Deck Navigation">
+      <div class="nav-btn-group">
+        <button type="button" class="btn-nav btn-nav-secondary" id="btn-prev-slide" aria-label="Previous Slide (ArrowLeft)" disabled>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
+            <polyline points="15 18 9 12 15 6"/>
+          </svg>
+          Previous
+        </button>
+
+        <button type="button" class="btn-nav btn-nav-primary" id="btn-next-slide" aria-label="Next Slide (ArrowRight or Spacebar)">
+          Next
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
+            <polyline points="9 18 15 12 9 6"/>
+          </svg>
+        </button>
+      </div>
+
+      <!-- 10 Slide Indicator Dots -->
+      <div class="slide-dots-indicator" id="slide-dots-container" role="tablist" aria-label="Slide Indicator Dots">
+        <!-- 10 Dots dynamically injected & synced -->
+      </div>
+    </nav>
+  </main>
+
+  <!-- ==========================================================================
+       FEATURE G: PRESENTER SPEAKING NOTES DRAWER
+       ========================================================================== -->
+  <aside class="notes-drawer" id="presenter-notes-panel" aria-label="Presenter Speaking Notes" aria-hidden="true">
+    <div class="notes-inner">
+      <div class="notes-heading">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+          <circle cx="12" cy="12" r="10"/>
+          <line x1="12" y1="16" x2="12" y2="12"/>
+          <line x1="12" y1="8" x2="12.01" y2="8"/>
+        </svg>
+        <span>Presenter Guide &bull; <span id="notes-slide-title">Slide 1</span></span>
+      </div>
+      <p class="notes-body" id="notes-content-text">
+        Introduce the Sun-to-Earth energy cascade. Emphasize that space weather is not an abstract astrophysical concept—it poses direct vulnerabilities to 21st-century technological civilization.
+      </p>
+    </div>
+  </aside>
+
+  <!-- ==========================================================================
+       FEATURE C: SLIDE JUMP DRAWER / MODAL OVERVIEW
+       ========================================================================== -->
+  <div class="drawer-overlay" id="slide-drawer-modal" role="dialog" aria-modal="true" aria-labelledby="drawer-modal-heading">
+    <div class="drawer-modal">
+      <div class="drawer-header">
+        <h3 id="drawer-modal-heading">Presentation Slide Overview (10 Slides)</h3>
+        <button type="button" class="btn-icon" id="btn-close-drawer" aria-label="Close Slide Overview">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
+            <line x1="18" y1="6" x2="6" y2="18"/>
+            <line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
+      </div>
+      <div class="drawer-grid" id="drawer-slides-grid">
+        <!-- 10 Slide Cards injected via JS -->
+      </div>
+    </div>
+  </div>
+
+  <!-- ==========================================================================
+       EMBEDDED VANILLA JAVASCRIPT (ZERO EXTERNAL LIBRARIES)
+       ========================================================================== -->
+  <script>
+    (function () {
+      'use strict';
+
+      /* ==========================================================================
+         1. SLIDE METADATA & PRESENTER NOTES DATA
+         ========================================================================== */
+      const TOTAL_SLIDES = 10;
+      let currentSlide = 1;
+
+      const SLIDES_METADATA = [
+        {
+          num: 1,
+          title: "Title & Learning Objectives",
+          notes: "Frame the fundamental question: How does solar plasma and radiation disrupt modern technologies? Walk through the three core learning objectives and establish the 1 AU energy cascade."
+        },
+        {
+          num: 2,
+          title: "Three Solar Drivers",
+          notes: "Carefully distinguish flares (light/photons), CMEs (bulk magnetized plasma clouds), and the solar wind (ambient continuous supersonic outflow). Emphasize their vastly different transit times."
+        },
+        {
+          num: 3,
+          title: "Solar Flares & Radiation",
+          notes: "Explain magnetic reconnection in active regions. Detail the speed-of-light travel time (~8.3 minutes) and ionospheric D-region ionization causing shortwave radio blackouts. Emphasize that flares alone do not trigger geomagnetic storms."
+        },
+        {
+          num: 4,
+          title: "Coronal Mass Ejections (CMEs)",
+          notes: "Explain flux rope kinematics and aerodynamic drag in the solar wind. Highlight why southward IMF (Bz < 0) is the critical physical gate for subsolar magnetic reconnection and geomagnetic storms."
+        },
+        {
+          num: 5,
+          title: "The Solar Wind",
+          notes: "Describe Eugene Parker's continuous supersonic outflow, the Archimedean Parker Spiral, and fast wind streams from coronal holes creating co-rotating interaction regions (CIRs)."
+        },
+        {
+          num: 6,
+          title: "The Sun–Earth Connection",
+          notes: "Demonstrate the interactive 5-stage timeline. Walk through the physical transit stages from coronal reconnection, across 1 AU, past Aditya-L1 at L1, into Earth's magnetosphere and technological systems."
+        },
+        {
+          num: 7,
+          title: "Four Technology Impact Areas",
+          notes: "Review the four vulnerability domains: satellites (charging/drag), GNSS (scintillation/delay), HF radio (D-region absorption), and power grids (GIC transformer saturation). Clarify that not every storm affects all systems."
+        },
+        {
+          num: 8,
+          title: "India's Aditya-L1 Mission",
+          notes: "Highlight ISRO's milestone solar observatory at Sun-Earth L1 (~1.5M km upstream). Distinguish the 4 remote sensing payloads (VELC, SUIT, SoLEXS, HEL1OS) from the 3 in-situ instruments (ASPEX, PAPA, MAG)."
+        },
+        {
+          num: 9,
+          title: "Interactive Scientific Comparison",
+          notes: "Switch between Flare vs. CME and Solar Minimum vs. Solar Maximum. Note that extreme Carrington-class events can occur even outside solar maximum, highlighting the need for continuous vigilance."
+        },
+        {
+          num: 10,
+          title: "Conclusion & Knowledge Check",
+          notes: "Summarize key findings and invite the audience to complete the 5-question knowledge check. Review the scientific rationales upon submission to reinforce core concepts."
+        }
+      ];
+
+      /* Feature D: Timeline Stages Data */
+      const TIMELINE_STAGES = [
+        {
+          stage: 1,
+          title: "Stage 1: Solar Origin (Coronal Active Regions)",
+          desc: "Magnetic reconnection in complex sunspot active regions triggers explosive energy releases: flare photons leave immediately at c, while plasma flux ropes accelerate into the low corona.",
+          time: "Time Elapsed: 0.0 hrs",
+          pill: "Stage 1 of 5: Solar Eruption"
+        },
+        {
+          stage: 2,
+          title: "Stage 2: Interplanetary 1 AU Propagation",
+          desc: "Solar flare photons reach Earth in ~8.3 minutes. Meanwhile, the CME plasma cloud traverses the heliosphere over 16 to 72+ hours, experiencing aerodynamic drag against the ambient solar wind.",
+          time: "Time Elapsed: ~8.3 mins (Photons) / 12–36 hrs (CME)",
+          pill: "Stage 2 of 5: 1 AU Transit"
+        },
+        {
+          stage: 3,
+          title: "Stage 3: Upstream Detection at Aditya-L1",
+          desc: "Stationed ~1.5 million km upstream of Earth (0.99 AU), Aditya-L1's in-situ sensors (ASPEX, PAPA, MAG) detect the interplanetary shock and measure IMF Bz orientation, providing an early warning lead time of 15–60 minutes.",
+          time: "Location: Sun–Earth L1 Halo Orbit (~0.99 AU)",
+          pill: "Stage 3 of 5: L1 In-Situ Sensing"
+        },
+        {
+          stage: 4,
+          title: "Stage 4: Geospace Arrival & Magnetopause Compression",
+          desc: "The CME shock strikes Earth's bow shock and compresses the magnetopause inward (from ~10 Re down to <6.6 Re). If IMF Bz is southward, magnetic reconnection pumps energy into the ring current and polar ionosphere.",
+          time: "Geospace Response: Immediate upon arrival",
+          pill: "Stage 4 of 5: Magnetospheric Coupling"
+        },
+        {
+          stage: 5,
+          title: "Stage 5: Terrestrial Technological Impacts",
+          desc: "Geomagnetic variations induce GICs in continental power grids causing transformer saturation, while ionospheric scintillation disrupts GPS navigation and thermospheric expansion increases orbital drag on satellites.",
+          time: "System Impacts: Hours to Days post-arrival",
+          pill: "Stage 5 of 5: Infrastructure Impacts"
+        }
+      ];
+
+      /* ==========================================================================
+         2. CORE DOM REFERENCES
+         ========================================================================== */
+      const slideProgressBar = document.getElementById('slide-progress-bar');
+      const slideCounterText = document.getElementById('slide-counter-text');
+      const btnPrevSlide = document.getElementById('btn-prev-slide');
+      const btnNextSlide = document.getElementById('btn-next-slide');
+      const slideDotsContainer = document.getElementById('slide-dots-container');
+
+      const btnToggleDrawer = document.getElementById('btn-toggle-drawer');
+      const btnCloseDrawer = document.getElementById('btn-close-drawer');
+      const slideDrawerModal = document.getElementById('slide-drawer-modal');
+      const drawerSlidesGrid = document.getElementById('drawer-slides-grid');
+
+      const btnToggleNotes = document.getElementById('btn-toggle-notes');
+      const presenterNotesPanel = document.getElementById('presenter-notes-panel');
+      const notesSlideTitle = document.getElementById('notes-slide-title');
+      const notesContentText = document.getElementById('notes-content-text');
+
+      const btnFullscreen = document.getElementById('btn-fullscreen');
+      const fullscreenBtnLabel = document.getElementById('fullscreen-btn-label');
+
+      /* Timeline Elements */
+      const timelineSlider = document.getElementById('timeline-stage-slider');
+      const timelineStagePill = document.getElementById('timeline-stage-pill');
+      const timelineReadoutTitle = document.getElementById('timeline-readout-title');
+      const timelineReadoutDesc = document.getElementById('timeline-readout-desc');
+      const timelineReadoutTime = document.getElementById('timeline-readout-time');
+
+      /* Comparison Controls */
+      const btnCompFlareCme = document.getElementById('btn-comp-flare-cme');
+      const btnCompMinMax = document.getElementById('btn-comp-min-max');
+      const viewFlareCme = document.getElementById('view-flare-cme');
+      const viewMinMax = document.getElementById('view-min-max');
+
+      /* Quiz Elements */
+      const btnQuizSubmit = document.getElementById('btn-quiz-submit');
+      const btnQuizRetry = document.getElementById('btn-quiz-retry');
+      const quizScoreBanner = document.getElementById('quiz-score-banner');
+
+      /* ==========================================================================
+         3. SLIDE NAVIGATION ENGINE (FEATURE A & B)
+         ========================================================================== */
+      function renderSlideDots() {
+        slideDotsContainer.innerHTML = '';
+        for (let i = 1; i <= TOTAL_SLIDES; i++) {
+          const dot = document.createElement('button');
+          dot.type = 'button';
+          dot.className = 'slide-dot' + (i === currentSlide ? ' active' : '');
+          dot.setAttribute('aria-label', `Navigate to slide ${i}`);
+          dot.setAttribute('role', 'tab');
+          dot.setAttribute('aria-selected', i === currentSlide ? 'true' : 'false');
+          dot.addEventListener('click', () => goToSlide(i));
+          slideDotsContainer.appendChild(dot);
+        }
+      }
+
+      function renderDrawerGrid() {
+        drawerSlidesGrid.innerHTML = '';
+        SLIDES_METADATA.forEach(meta => {
+          const card = document.createElement('div');
+          card.className = 'drawer-slide-card' + (meta.num === currentSlide ? ' active' : '');
+          card.setAttribute('role', 'button');
+          card.setAttribute('tabindex', '0');
+          card.setAttribute('aria-label', `Jump to Slide ${meta.num}: ${meta.title}`);
+          card.innerHTML = `
+            <div class="card-num">Slide ${meta.num.toString().padStart(2, '0')}</div>
+            <div class="card-name">${meta.title}</div>
+          `;
+          const handleSelect = () => {
+            goToSlide(meta.num);
+            closeDrawer();
+          };
+          card.addEventListener('click', handleSelect);
+          card.addEventListener('keydown', (e) => {
+            if (e.key === ' ' || e.key === 'Enter') {
+              e.preventDefault();
+              handleSelect();
+            }
+          });
+          drawerSlidesGrid.appendChild(card);
+        });
+      }
+
+      function updateSlideUI() {
+        // Hide all slides, show active
+        for (let i = 1; i <= TOTAL_SLIDES; i++) {
+          const slideEl = document.getElementById(`slide-${i}`);
+          if (slideEl) {
+            slideEl.classList.toggle('active', i === currentSlide);
+          }
+        }
+
+        // Update Nav Buttons
+        btnPrevSlide.disabled = (currentSlide === 1);
+        btnNextSlide.disabled = (currentSlide === TOTAL_SLIDES);
+
+        // Update Progress Bar & Counter
+        const pct = Math.round((currentSlide / TOTAL_SLIDES) * 100);
+        slideProgressBar.style.width = `${pct}%`;
+        slideCounterText.textContent = `Slide ${currentSlide} / ${TOTAL_SLIDES}`;
+
+        // Sync Dots & Drawer
+        renderSlideDots();
+        renderDrawerGrid();
+
+        // Sync Presenter Notes
+        const currentMeta = SLIDES_METADATA.find(m => m.num === currentSlide);
+        if (currentMeta) {
+          notesSlideTitle.textContent = `Slide ${currentSlide}: ${currentMeta.title}`;
+          notesContentText.textContent = currentMeta.notes;
+        }
+      }
+
+      function goToSlide(targetSlide) {
+        if (targetSlide < 1 || targetSlide > TOTAL_SLIDES) return;
+        currentSlide = targetSlide;
+        updateSlideUI();
+      }
+
+      function nextSlide() {
+        if (currentSlide < TOTAL_SLIDES) {
+          goToSlide(currentSlide + 1);
+        }
+      }
+
+      function prevSlide() {
+        if (currentSlide > 1) {
+          goToSlide(currentSlide - 1);
+        }
+      }
+
+      btnNextSlide.addEventListener('click', nextSlide);
+      btnPrevSlide.addEventListener('click', prevSlide);
+
+      // Keyboard Navigation (Guard against typing in inputs or radio options)
+      window.addEventListener('keydown', (e) => {
+        // Do not intercept if user is inside a form input, textarea, or slider
+        const tag = e.target.tagName.toLowerCase();
+        if (tag === 'input' || tag === 'textarea' || tag === 'select') {
+          return;
+        }
+
+        if (e.key === 'ArrowRight' || e.key === 'PageDown') {
+          e.preventDefault();
+          nextSlide();
+        } else if (e.key === 'ArrowLeft' || e.key === 'PageUp') {
+          e.preventDefault();
+          prevSlide();
+        } else if (e.key === ' ' && e.target === document.body) {
+          e.preventDefault();
+          nextSlide();
+        } else if (e.key === 'p' || e.key === 'P') {
+          toggleNotes();
+        } else if (e.key === 'f' || e.key === 'F') {
+          toggleFullscreen();
+        } else if (e.key === 'Escape') {
+          closeDrawer();
+        } else if (e.key >= '1' && e.key <= '9') {
+          goToSlide(parseInt(e.key, 10));
+        } else if (e.key === '0') {
+          goToSlide(10);
+        }
+      });
+
+      /* ==========================================================================
+         4. SLIDE JUMP DRAWER (FEATURE C)
+         ========================================================================== */
+      function openDrawer() {
+        slideDrawerModal.classList.add('active');
+        btnToggleDrawer.setAttribute('aria-expanded', 'true');
+        btnCloseDrawer.focus();
+      }
+
+      function closeDrawer() {
+        slideDrawerModal.classList.remove('active');
+        btnToggleDrawer.setAttribute('aria-expanded', 'false');
+      }
+
+      btnToggleDrawer.addEventListener('click', openDrawer);
+      btnCloseDrawer.addEventListener('click', closeDrawer);
+      slideDrawerModal.addEventListener('click', (e) => {
+        if (e.target === slideDrawerModal) {
+          closeDrawer();
+        }
+      });
+
+      /* ==========================================================================
+         5. PRESENTER NOTES DRAWER (FEATURE G)
+         ========================================================================== */
+      function toggleNotes() {
+        const isOpen = presenterNotesPanel.classList.toggle('active');
+        btnToggleNotes.classList.toggle('active', isOpen);
+        btnToggleNotes.setAttribute('aria-pressed', isOpen ? 'true' : 'false');
+        presenterNotesPanel.setAttribute('aria-hidden', isOpen ? 'false' : 'true');
+      }
+
+      btnToggleNotes.addEventListener('click', toggleNotes);
+
+      /* ==========================================================================
+         6. FULLSCREEN CONTROL (FEATURE H)
+         ========================================================================== */
+      function toggleFullscreen() {
+        try {
+          if (!document.fullscreenElement) {
+            if (document.documentElement.requestFullscreen) {
+              document.documentElement.requestFullscreen();
+            } else if (document.documentElement.webkitRequestFullscreen) {
+              document.documentElement.webkitRequestFullscreen();
+            }
+          } else {
+            if (document.exitFullscreen) {
+              document.exitFullscreen();
+            } else if (document.webkitExitFullscreen) {
+              document.webkitExitFullscreen();
+            }
+          }
+        } catch (err) {
+          console.warn('Fullscreen request denied or not supported in this context.', err);
+        }
+      }
+
+      function updateFullscreenUI() {
+        const isFull = !!document.fullscreenElement;
+        fullscreenBtnLabel.textContent = isFull ? 'Exit Full' : 'Fullscreen';
+        btnFullscreen.classList.toggle('active', isFull);
+      }
+
+      btnFullscreen.addEventListener('click', toggleFullscreen);
+      document.addEventListener('fullscreenchange', updateFullscreenUI);
+
+      /* ==========================================================================
+         7. FEATURE D: INTERACTIVE SUN-TO-EARTH TIMELINE (SLIDE 6)
+         ========================================================================== */
+      function updateTimelineStage(stageIndex) {
+        const data = TIMELINE_STAGES[stageIndex - 1];
+        if (!data) return;
+
+        timelineStagePill.textContent = data.pill;
+        timelineReadoutTitle.textContent = data.title;
+        timelineReadoutDesc.textContent = data.desc;
+        timelineReadoutTime.textContent = data.time;
+      }
+
+      timelineSlider.addEventListener('input', (e) => {
+        const stage = parseInt(e.target.value, 10);
+        updateTimelineStage(stage);
+      });
+
+      /* ==========================================================================
+         8. FEATURE E: COMPARISON CONTROLS (SLIDE 9)
+         ========================================================================== */
+      btnCompFlareCme.addEventListener('click', () => {
+        btnCompFlareCme.classList.add('active');
+        btnCompFlareCme.setAttribute('aria-pressed', 'true');
+        btnCompMinMax.classList.remove('active');
+        btnCompMinMax.setAttribute('aria-pressed', 'false');
+
+        viewFlareCme.style.display = 'grid';
+        viewMinMax.style.display = 'none';
+      });
+
+      btnCompMinMax.addEventListener('click', () => {
+        btnCompMinMax.classList.add('active');
+        btnCompMinMax.setAttribute('aria-pressed', 'true');
+        btnCompFlareCme.classList.remove('active');
+        btnCompFlareCme.setAttribute('aria-pressed', 'false');
+
+        viewMinMax.style.display = 'grid';
+        viewFlareCme.style.display = 'none';
+      });
+
+      /* ==========================================================================
+         9. FEATURE F: FINAL KNOWLEDGE CHECK (SLIDE 10)
+         ========================================================================== */
+      const QUIZ_ANSWERS = {
+        q1: '1', // B. Flare = photons, CME = magnetized plasma
+        q2: '0', // A. Approx 8.3 minutes
+        q3: '1', // B. Southward IMF connects antiparallel
+        q4: '1', // B. Halo orbit at L1 ~1.5M km
+        q5: '1'  // B. dB/dt inducing GICs causing half-cycle core saturation
+      };
+
+      btnQuizSubmit.addEventListener('click', () => {
+        let score = 0;
+        let answeredCount = 0;
+
+        Object.keys(QUIZ_ANSWERS).forEach(qKey => {
+          const selected = document.querySelector(`input[name="${qKey}"]:checked`);
+          const explEl = document.getElementById(`${qKey}-expl`);
+
+          if (selected) {
+            answeredCount++;
+            const isCorrect = (selected.value === QUIZ_ANSWERS[qKey]);
+            if (isCorrect) score++;
+
+            // Highlight label
+            const label = selected.closest('.quiz-option-label');
+            if (label) {
+              label.classList.add(isCorrect ? 'is-correct' : 'is-incorrect');
+            }
+
+            // Reveal explanation
+            if (explEl) {
+              explEl.classList.add('active');
+            }
+          }
+        });
+
+        if (answeredCount < 5) {
+          quizScoreBanner.innerHTML = `<span style="color:var(--solar-amber);">Please answer all 5 questions before submitting (${answeredCount}/5 completed).</span>`;
+          return;
+        }
+
+        const pct = Math.round((score / 5) * 100);
+        quizScoreBanner.innerHTML = `Score: <span style="color:${score >= 4 ? 'var(--aurora-emerald)' : 'var(--solar-amber)'}; font-size:1.1rem;">${score} / 5 (${pct}%)</span> &bull; ${score === 5 ? 'Exemplary Space Weather Mastery!' : 'Review the scientific explanations above.'}`;
+
+        btnQuizSubmit.style.display = 'none';
+        btnQuizRetry.style.display = 'inline-flex';
+      });
+
+      btnQuizRetry.addEventListener('click', () => {
+        document.getElementById('presentation-quiz-form').reset();
+        document.querySelectorAll('.quiz-option-label').forEach(lbl => {
+          lbl.classList.remove('is-correct', 'is-incorrect');
+        });
+        document.querySelectorAll('.quiz-explanation-box').forEach(box => {
+          box.classList.remove('active');
+        });
+
+        quizScoreBanner.textContent = 'Select your answers and click Submit.';
+        btnQuizSubmit.style.display = 'inline-flex';
+        btnQuizRetry.style.display = 'none';
+      });
+
+      /* ==========================================================================
+         10. FEATURE I: TOUCH & SWIPE NAVIGATION
+         ========================================================================== */
+      let touchStartX = null;
+      let touchStartY = null;
+
+      const viewportEl = document.getElementById('slide-deck-viewport');
+
+      viewportEl.addEventListener('touchstart', (e) => {
+        touchStartX = e.changedTouches[0].screenX;
+        touchStartY = e.changedTouches[0].screenY;
+      }, { passive: true });
+
+      viewportEl.addEventListener('touchend', (e) => {
+        if (touchStartX === null || touchStartY === null) return;
+        const touchEndX = e.changedTouches[0].screenX;
+        const touchEndY = e.changedTouches[0].screenY;
+
+        const deltaX = touchEndX - touchStartX;
+        const deltaY = touchEndY - touchStartY;
+
+        // Ensure horizontal swipe is dominant and exceeds 50px threshold
+        if (Math.abs(deltaX) > 50 && Math.abs(deltaX) > Math.abs(deltaY) * 1.5) {
+          if (deltaX < 0) {
+            nextSlide();
+          } else {
+            prevSlide();
+          }
+        }
+        touchStartX = null;
+        touchStartY = null;
+      }, { passive: true });
+
+      /* Initialize Presentation */
+      updateSlideUI();
+      updateTimelineStage(1);
+
+    })();
+  </script>
+</body>
+</html>

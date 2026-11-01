@@ -1,0 +1,2462 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Space Weather Revision Dashboard | BSERC Project 2</title>
+  <style>
+    /* ==========================================================================
+       CSS VARIABLES & THEME TOKENS
+       ========================================================================== */
+    :root {
+      --bg-primary: #070b19;
+      --bg-secondary: #0f172a;
+      --bg-card: #1e293b;
+      --bg-card-hover: #27354f;
+      --border-color: #334155;
+      --border-focus: #06b6d4;
+      
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --text-dim: #64748b;
+      
+      --accent-cyan: #06b6d4;
+      --accent-cyan-glow: rgba(6, 182, 212, 0.25);
+      --accent-amber: #f59e0b;
+      --accent-amber-glow: rgba(245, 158, 11, 0.25);
+      --accent-emerald: #10b981;
+      --accent-rose: #f43f5e;
+      
+      --radius-sm: 6px;
+      --radius-md: 10px;
+      --radius-lg: 16px;
+      
+      --font-sans: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      
+      --transition-fast: 0.15s ease;
+      --transition-normal: 0.25s ease;
+    }
+
+    /* ==========================================================================
+       BASE & RESET
+       ========================================================================== */
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg-primary);
+      color: var(--text-main);
+      font-family: var(--font-sans);
+      line-height: 1.5;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow-x: hidden;
+      padding-bottom: 2rem;
+    }
+
+    a {
+      color: var(--accent-cyan);
+      text-decoration: none;
+    }
+    a:hover {
+      text-decoration: underline;
+    }
+
+    button, input, select {
+      font: inherit;
+    }
+
+    :focus-visible {
+      outline: 2px solid var(--border-focus);
+      outline-offset: 3px;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+      }
+    }
+
+    /* ==========================================================================
+       HEADER & APP BAR
+       ========================================================================== */
+    .app-header {
+      background: linear-gradient(180deg, rgba(15, 23, 42, 0.95) 0%, rgba(7, 11, 25, 0.8) 100%);
+      border-bottom: 1px solid var(--border-color);
+      padding: 1rem 1.5rem;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      backdrop-filter: blur(8px);
+    }
+
+    .header-container {
+      max-width: 1280px;
+      margin: 0 auto;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+    }
+
+    .brand-group {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .brand-icon {
+      width: 38px;
+      height: 38px;
+      border-radius: var(--radius-md);
+      background: linear-gradient(135deg, var(--accent-amber), var(--accent-cyan));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 0 15px var(--accent-cyan-glow);
+    }
+
+    .brand-icon svg {
+      width: 22px;
+      height: 22px;
+      fill: #070b19;
+    }
+
+    .brand-title {
+      font-size: 1.25rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      color: var(--text-main);
+    }
+
+    .brand-subtitle {
+      font-size: 0.75rem;
+      color: var(--accent-cyan);
+      font-family: var(--font-mono);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .header-status {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+    }
+
+    .project-nav {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 0.45rem;
+    }
+
+    .nav-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      padding: 0.35rem 0.75rem;
+      border-radius: 9999px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      text-decoration: none;
+      background: var(--bg-card);
+      color: var(--text-main);
+      border: 1px solid var(--border-color);
+      transition: all 0.15s ease;
+      min-height: 34px;
+      white-space: nowrap;
+    }
+    .nav-pill:hover,
+    .nav-pill:focus-visible {
+      background: var(--bg-card-hover);
+      border-color: var(--accent-cyan);
+      color: #ffffff;
+    }
+    .nav-pill.active {
+      background: rgba(6, 182, 212, 0.16);
+      border-color: var(--accent-cyan);
+      color: var(--accent-cyan);
+    }
+
+    @media (max-width: 600px) {
+      .nav-pill {
+        padding: 0.3rem 0.6rem;
+        font-size: 0.72rem;
+      }
+    }
+
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      padding: 0.35rem 0.75rem;
+      border-radius: 9999px;
+      font-size: 0.8rem;
+      font-family: var(--font-mono);
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background-color: var(--accent-emerald);
+      box-shadow: 0 0 8px var(--accent-emerald);
+    }
+
+    /* ==========================================================================
+       CONTAINER & LAYOUT
+       ========================================================================== */
+    .dashboard-container {
+      max-width: 1280px;
+      width: 100%;
+      margin: 1.5rem auto;
+      padding: 0 1.25rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1.75rem;
+    }
+
+    /* Section Headers */
+    .section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      margin-bottom: 1rem;
+      border-bottom: 1px solid var(--border-color);
+      padding-bottom: 0.5rem;
+    }
+
+    .section-title {
+      font-size: 1.25rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      color: var(--text-main);
+    }
+
+    .section-title svg {
+      width: 20px;
+      height: 20px;
+      color: var(--accent-cyan);
+    }
+
+    .section-tag {
+      font-size: 0.75rem;
+      font-family: var(--font-mono);
+      color: var(--text-muted);
+    }
+
+    /* Cards */
+    .card {
+      background-color: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-lg);
+      padding: 1.25rem;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+    }
+
+    /* ==========================================================================
+       FEATURE F: STUDY OVERVIEW STATS BAR
+       ========================================================================== */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 1rem;
+    }
+
+    .stat-card {
+      background: linear-gradient(145deg, var(--bg-card) 0%, rgba(15, 23, 42, 0.8) 100%);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      padding: 1rem 1.25rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 0.5rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .stat-card::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 4px;
+      height: 100%;
+      background-color: var(--border-color);
+    }
+
+    .stat-card.accent-cyan::after { background-color: var(--accent-cyan); }
+    .stat-card.accent-amber::after { background-color: var(--accent-amber); }
+    .stat-card.accent-emerald::after { background-color: var(--accent-emerald); }
+
+    .stat-label {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      font-weight: 600;
+    }
+
+    .stat-value {
+      font-size: 1.85rem;
+      font-weight: 700;
+      font-family: var(--font-mono);
+      color: var(--text-main);
+      display: flex;
+      align-items: baseline;
+      gap: 0.35rem;
+    }
+
+    .stat-unit {
+      font-size: 0.9rem;
+      color: var(--text-muted);
+      font-weight: 400;
+    }
+
+    .stat-progress-track {
+      height: 6px;
+      background: var(--bg-primary);
+      border-radius: 999px;
+      overflow: hidden;
+      margin-top: 0.25rem;
+    }
+
+    .stat-progress-bar {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, var(--accent-cyan), var(--accent-emerald));
+      border-radius: 999px;
+      transition: width var(--transition-normal);
+    }
+
+    /* ==========================================================================
+       TWO-COLUMN WORKSPACE: TOPIC TRACKER & FOCUS TOOLS
+       ========================================================================== */
+    .main-workspace-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 1.75rem;
+    }
+
+    @media (min-width: 1024px) {
+      .main-workspace-grid {
+        grid-template-columns: 1.35fr 1fr;
+        align-items: start;
+      }
+    }
+
+    /* ==========================================================================
+       FEATURE A: TOPIC MASTERY TRACKER
+       ========================================================================== */
+    .tracker-card {
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+    }
+
+    .tracker-toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 0.75rem;
+      background: var(--bg-secondary);
+      padding: 0.75rem 1rem;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border-color);
+    }
+
+    .tracker-status-text {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      font-family: var(--font-mono);
+    }
+
+    .tracker-status-highlight {
+      color: var(--accent-cyan);
+      font-weight: 700;
+    }
+
+    .btn-secondary {
+      background: transparent;
+      color: var(--text-muted);
+      border: 1px solid var(--border-color);
+      padding: 0.45rem 0.85rem;
+      border-radius: var(--radius-sm);
+      font-size: 0.8rem;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      transition: all var(--transition-fast);
+      min-height: 44px;
+      min-width: 44px;
+      justify-content: center;
+    }
+
+    .btn-secondary:hover {
+      background: var(--bg-card-hover);
+      color: var(--text-main);
+      border-color: var(--text-muted);
+    }
+
+    .btn-secondary.danger:hover {
+      border-color: var(--accent-rose);
+      color: var(--accent-rose);
+    }
+
+    /* Topic Accordions */
+    .topics-accordion-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.85rem;
+    }
+
+    .topic-group {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      transition: border-color var(--transition-fast);
+    }
+
+    .topic-group:focus-within {
+      border-color: var(--border-focus);
+    }
+
+    .topic-header {
+      width: 100%;
+      background: none;
+      border: none;
+      color: inherit;
+      padding: 0.9rem 1rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 0.75rem;
+      cursor: pointer;
+      text-align: left;
+      min-height: 48px;
+    }
+
+    .topic-header:hover {
+      background: rgba(255, 255, 255, 0.02);
+    }
+
+    .topic-header-title {
+      font-size: 0.95rem;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+    }
+
+    .topic-index-badge {
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      color: var(--accent-cyan);
+      padding: 0.15rem 0.45rem;
+      border-radius: 4px;
+    }
+
+    .topic-header-meta {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .topic-pct {
+      font-size: 0.8rem;
+      font-family: var(--font-mono);
+      color: var(--text-muted);
+    }
+
+    .topic-chevron {
+      width: 16px;
+      height: 16px;
+      transition: transform var(--transition-fast);
+      color: var(--text-muted);
+    }
+
+    .topic-group.open .topic-chevron {
+      transform: rotate(180deg);
+    }
+
+    .topic-content {
+      display: none;
+      padding: 0.5rem 1rem 1rem 1rem;
+      border-top: 1px solid var(--border-color);
+      background: var(--bg-primary);
+    }
+
+    .topic-group.open .topic-content {
+      display: block;
+    }
+
+    .checklist-items {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 0.6rem;
+    }
+
+    .check-label {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.75rem;
+      cursor: pointer;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      padding: 0.4rem 0.5rem;
+      border-radius: var(--radius-sm);
+      transition: background var(--transition-fast);
+      min-height: 44px;
+    }
+
+    .check-label:hover {
+      background: rgba(255, 255, 255, 0.03);
+      color: var(--text-main);
+    }
+
+    .check-input {
+      appearance: none;
+      -webkit-appearance: none;
+      width: 20px;
+      height: 20px;
+      min-width: 20px;
+      border: 2px solid var(--border-color);
+      border-radius: 4px;
+      background: var(--bg-secondary);
+      cursor: pointer;
+      position: relative;
+      margin-top: 2px;
+      display: inline-grid;
+      place-content: center;
+      transition: all var(--transition-fast);
+    }
+
+    .check-input:checked {
+      background-color: var(--accent-cyan);
+      border-color: var(--accent-cyan);
+    }
+
+    .check-input:checked::before {
+      content: "";
+      width: 10px;
+      height: 6px;
+      border-left: 2px solid #070b19;
+      border-bottom: 2px solid #070b19;
+      transform: rotate(-45deg) translate(1px, -1px);
+    }
+
+    .check-label.completed-text {
+      color: var(--text-dim);
+      text-decoration: line-through;
+    }
+
+    /* ==========================================================================
+       FEATURE B: FOCUS COUNTDOWN TIMER
+       ========================================================================== */
+    .timer-container {
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+      align-items: center;
+      text-align: center;
+    }
+
+    .timer-display-box {
+      width: 100%;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      padding: 1.5rem 1rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .timer-digits {
+      font-size: 3.5rem;
+      font-weight: 700;
+      font-family: var(--font-mono);
+      letter-spacing: -0.03em;
+      color: var(--accent-cyan);
+      text-shadow: 0 0 20px var(--accent-cyan-glow);
+      line-height: 1;
+    }
+
+    .timer-status-banner {
+      margin-top: 0.75rem;
+      font-size: 0.85rem;
+      font-family: var(--font-mono);
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .timer-status-banner.complete {
+      color: var(--accent-amber);
+      font-weight: 700;
+      animation: pulse 1s infinite alternate;
+    }
+
+    @keyframes pulse {
+      from { opacity: 0.6; }
+      to { opacity: 1; }
+    }
+
+    .timer-controls-group {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 0.5rem;
+      width: 100%;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--accent-cyan), #0891b2);
+      color: #070b19;
+      font-weight: 600;
+      border: none;
+      padding: 0.6rem 1.25rem;
+      border-radius: var(--radius-md);
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      transition: all var(--transition-fast);
+      min-height: 44px;
+      min-width: 44px;
+      box-shadow: 0 2px 8px var(--accent-cyan-glow);
+    }
+
+    .btn-primary:hover {
+      filter: brightness(1.1);
+      transform: translateY(-1px);
+    }
+
+    .timer-presets {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      align-items: center;
+      gap: 0.5rem;
+      width: 100%;
+      margin-top: 0.25rem;
+    }
+
+    .preset-btn {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      color: var(--text-muted);
+      padding: 0.4rem 0.75rem;
+      border-radius: var(--radius-sm);
+      font-size: 0.8rem;
+      font-family: var(--font-mono);
+      cursor: pointer;
+      min-height: 44px;
+      transition: all var(--transition-fast);
+    }
+
+    .preset-btn:hover {
+      background: var(--bg-card-hover);
+      color: var(--text-main);
+      border-color: var(--accent-cyan);
+    }
+
+    .custom-timer-form {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      margin-top: 0.25rem;
+    }
+
+    .custom-input {
+      width: 70px;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      color: var(--text-main);
+      padding: 0.4rem 0.5rem;
+      border-radius: var(--radius-sm);
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+      text-align: center;
+      min-height: 44px;
+    }
+
+    .sound-toggle-wrapper {
+      margin-top: 0.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      cursor: pointer;
+    }
+
+    /* ==========================================================================
+       FEATURE C: INTERACTIVE FLASHCARDS
+       ========================================================================== */
+    .flashcard-module {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .flashcard-header-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .flashcard-badge {
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      color: var(--accent-amber);
+      padding: 0.2rem 0.6rem;
+      border-radius: 999px;
+    }
+
+    .flashcard-wrapper {
+      perspective: 1000px;
+      min-height: 240px;
+      width: 100%;
+    }
+
+    .flashcard-inner {
+      width: 100%;
+      height: 100%;
+      min-height: 240px;
+      position: relative;
+      transform-style: preserve-3d;
+      transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+      cursor: pointer;
+      border-radius: var(--radius-md);
+    }
+
+    .flashcard-inner.flipped {
+      transform: rotateY(180deg);
+    }
+
+    .flashcard-face {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      backface-visibility: hidden;
+      border-radius: var(--radius-md);
+      padding: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      border: 1px solid var(--border-color);
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    }
+
+    .flashcard-front {
+      background: linear-gradient(145deg, var(--bg-secondary) 0%, rgba(30, 41, 59, 0.8) 100%);
+      border-left: 4px solid var(--accent-cyan);
+    }
+
+    .flashcard-back {
+      background: linear-gradient(145deg, #132338 0%, #0f172a 100%);
+      border-left: 4px solid var(--accent-amber);
+      transform: rotateY(180deg);
+    }
+
+    .flashcard-tag {
+      font-size: 0.7rem;
+      font-family: var(--font-mono);
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .flashcard-text {
+      font-size: 1.05rem;
+      font-weight: 500;
+      color: var(--text-main);
+      line-height: 1.45;
+      margin: auto 0;
+    }
+
+    .flashcard-back .flashcard-text {
+      font-size: 0.95rem;
+      color: #e2e8f0;
+      line-height: 1.5;
+    }
+
+    .flashcard-prompt-hint {
+      font-size: 0.75rem;
+      color: var(--accent-cyan);
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+    }
+
+    .flashcard-controls {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    /* ==========================================================================
+       FEATURE E: ADITYA-L1 PAYLOAD EXPLORER
+       ========================================================================== */
+    .payload-filter-bar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-bottom: 1.25rem;
+    }
+
+    .filter-btn {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      color: var(--text-muted);
+      padding: 0.5rem 1rem;
+      border-radius: var(--radius-sm);
+      font-size: 0.85rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all var(--transition-fast);
+      min-height: 44px;
+    }
+
+    .filter-btn:hover {
+      background: var(--bg-card-hover);
+      color: var(--text-main);
+    }
+
+    .filter-btn.active {
+      background: rgba(6, 182, 212, 0.15);
+      border-color: var(--accent-cyan);
+      color: var(--accent-cyan);
+      font-weight: 600;
+    }
+
+    .payloads-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 1rem;
+    }
+
+    .payload-card {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      padding: 1.15rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 0.75rem;
+      transition: transform var(--transition-fast), border-color var(--transition-fast);
+    }
+
+    .payload-card:hover {
+      transform: translateY(-2px);
+      border-color: var(--border-focus);
+    }
+
+    .payload-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 0.5rem;
+    }
+
+    .payload-acronym {
+      font-size: 1.25rem;
+      font-weight: 700;
+      font-family: var(--font-mono);
+      color: var(--accent-cyan);
+    }
+
+    .payload-type-badge {
+      font-size: 0.7rem;
+      padding: 0.2rem 0.5rem;
+      border-radius: 4px;
+      font-family: var(--font-mono);
+      text-transform: uppercase;
+      font-weight: 600;
+    }
+
+    .type-remote {
+      background: rgba(245, 158, 11, 0.15);
+      color: var(--accent-amber);
+      border: 1px solid rgba(245, 158, 11, 0.3);
+    }
+
+    .type-insitu {
+      background: rgba(16, 185, 129, 0.15);
+      color: var(--accent-emerald);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+    }
+
+    .payload-full-name {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--text-main);
+    }
+
+    .payload-desc {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      line-height: 1.45;
+    }
+
+    .payload-institute {
+      font-size: 0.75rem;
+      color: var(--text-dim);
+      font-family: var(--font-mono);
+      border-top: 1px dashed var(--border-color);
+      padding-top: 0.5rem;
+    }
+
+    /* ==========================================================================
+       FEATURE D: SCORED KNOWLEDGE QUIZ
+       ========================================================================== */
+    .quiz-container {
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+    }
+
+    .quiz-header-bar {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1rem;
+      padding-bottom: 0.75rem;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .quiz-progress-text {
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+
+    .quiz-score-pill {
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      padding: 0.3rem 0.75rem;
+      border-radius: 9999px;
+      color: var(--accent-cyan);
+    }
+
+    .quiz-card-box {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      padding: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+    }
+
+    .quiz-question-title {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: var(--text-main);
+      line-height: 1.4;
+    }
+
+    .quiz-options-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.65rem;
+    }
+
+    .quiz-option-label {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.8rem 1rem;
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      cursor: pointer;
+      font-size: 0.9rem;
+      transition: all var(--transition-fast);
+      min-height: 48px;
+    }
+
+    .quiz-option-label:hover {
+      background: var(--bg-card-hover);
+      border-color: var(--text-muted);
+    }
+
+    .quiz-option-radio {
+      appearance: none;
+      -webkit-appearance: none;
+      width: 18px;
+      height: 18px;
+      min-width: 18px;
+      border: 2px solid var(--text-muted);
+      border-radius: 50%;
+      background: transparent;
+      cursor: pointer;
+      display: grid;
+      place-content: center;
+    }
+
+    .quiz-option-radio:checked {
+      border-color: var(--accent-cyan);
+    }
+
+    .quiz-option-radio:checked::before {
+      content: "";
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--accent-cyan);
+    }
+
+    /* Option states after answer submission */
+    .quiz-option-label.is-correct {
+      background: rgba(16, 185, 129, 0.15) !important;
+      border-color: var(--accent-emerald) !important;
+      color: #6ee7b7;
+    }
+
+    .quiz-option-label.is-incorrect {
+      background: rgba(244, 63, 94, 0.15) !important;
+      border-color: var(--accent-rose) !important;
+      color: #fda4af;
+    }
+
+    .quiz-explanation-box {
+      display: none;
+      padding: 1rem;
+      background: rgba(7, 11, 25, 0.8);
+      border-left: 3px solid var(--accent-cyan);
+      border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+      font-size: 0.85rem;
+      color: #cbd5e1;
+      line-height: 1.45;
+    }
+
+    .quiz-explanation-box.active {
+      display: block;
+    }
+
+    .quiz-action-bar {
+      display: flex;
+      justify-content: flex-end;
+      gap: 0.75rem;
+    }
+
+    /* Quiz Results Summary Screen */
+    .quiz-results-screen {
+      display: none;
+      text-align: center;
+      padding: 2rem 1rem;
+      flex-direction: column;
+      align-items: center;
+      gap: 1.25rem;
+    }
+
+    .quiz-results-screen.active {
+      display: flex;
+    }
+
+    .quiz-score-circle {
+      width: 110px;
+      height: 110px;
+      border-radius: 50%;
+      border: 4px solid var(--accent-cyan);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      font-size: 2.2rem;
+      font-weight: 700;
+      font-family: var(--font-mono);
+      box-shadow: 0 0 25px var(--accent-cyan-glow);
+    }
+
+    .quiz-score-circle span {
+      font-size: 0.8rem;
+      font-weight: 400;
+      color: var(--text-muted);
+    }
+
+    /* ==========================================================================
+       MODAL DIALOG (CONFIRMATION / RESET)
+       ========================================================================== */
+    dialog.modal-dialog {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-lg);
+      color: var(--text-main);
+      padding: 1.5rem;
+      max-width: 440px;
+      width: 90%;
+      margin: auto;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+    }
+
+    dialog.modal-dialog::backdrop {
+      background: rgba(7, 11, 25, 0.75);
+      backdrop-filter: blur(4px);
+    }
+
+    .modal-title {
+      font-size: 1.15rem;
+      font-weight: 700;
+      margin-bottom: 0.75rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      color: var(--accent-amber);
+    }
+
+    .modal-body {
+      font-size: 0.9rem;
+      color: var(--text-muted);
+      line-height: 1.5;
+      margin-bottom: 1.5rem;
+    }
+
+    .modal-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 0.75rem;
+    }
+
+    /* ==========================================================================
+       FOOTER & SCIENTIFIC DISCLAIMER
+       ========================================================================== */
+    .app-footer {
+      max-width: 1280px;
+      margin: 2rem auto 0 auto;
+      padding: 1.5rem 1.25rem 0 1.25rem;
+      border-top: 1px solid var(--border-color);
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      font-size: 0.78rem;
+      color: var(--text-dim);
+      text-align: center;
+    }
+
+    .disclaimer-badge {
+      display: inline-block;
+      background: rgba(245, 158, 11, 0.1);
+      border: 1px solid rgba(245, 158, 11, 0.2);
+      color: var(--accent-amber);
+      padding: 0.25rem 0.6rem;
+      border-radius: 4px;
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      margin-bottom: 0.35rem;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ==========================================================================
+       APPLICATION HEADER
+       ========================================================================== -->
+  <header class="app-header" role="banner">
+    <div class="header-container">
+      <div class="brand-group">
+        <div class="brand-icon" aria-hidden="true">
+          <!-- Solar Icon SVG -->
+          <svg viewBox="0 0 24 24">
+            <circle cx="12" cy="12" r="5" />
+            <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" stroke="#070b19" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <div>
+          <h1 class="brand-title">Space Weather Revision Dashboard</h1>
+          <div class="brand-subtitle">BSERC GenAI Internship — Project 2</div>
+        </div>
+      </div>
+
+      <div class="header-status">
+        <nav class="project-nav" aria-label="Project Pages">
+          <a href="space-weather-dashboard.html" class="nav-pill active" id="nav-link-dashboard" aria-current="page">Study Dashboard</a>
+          <a href="sun-earth-model.html" class="nav-pill" id="nav-link-simulator">3D Simulator</a>
+          <a href="space-weather-presentation.html" class="nav-pill" id="nav-link-presentation">Presentation</a>
+        </nav>
+        <div class="status-badge" title="Live clock">
+          <span class="status-dot" aria-hidden="true"></span>
+          <span id="live-clock">00:00:00 UTC</span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- ==========================================================================
+       MAIN DASHBOARD CONTAINER
+       ========================================================================== -->
+  <main class="dashboard-container" role="main">
+
+    <!-- FEATURE F: STUDY OVERVIEW STATS -->
+    <section aria-labelledby="stats-heading">
+      <h2 id="stats-heading" class="visually-hidden" style="position:absolute; width:1px; height:1px; overflow:hidden;">Study Overview Statistics</h2>
+      <div class="stats-grid">
+        <div class="stat-card accent-cyan">
+          <div class="stat-label">Overall Topic Mastery</div>
+          <div class="stat-value"><span id="stat-overall-pct">0</span><span class="stat-unit">%</span></div>
+          <div class="stat-progress-track" aria-hidden="true">
+            <div class="stat-progress-bar" id="stat-progress-bar"></div>
+          </div>
+        </div>
+
+        <div class="stat-card accent-amber">
+          <div class="stat-label">Checklist Objectives</div>
+          <div class="stat-value"><span id="stat-completed-items">0</span><span class="stat-unit">/ 24</span></div>
+          <div style="font-size:0.75rem; color:var(--text-dim);" id="stat-mastery-rank">Status: Novice Researcher</div>
+        </div>
+
+        <div class="stat-card accent-emerald">
+          <div class="stat-label">Quiz Readiness</div>
+          <div class="stat-value"><span id="stat-quiz-score">--</span><span class="stat-unit">/ 10</span></div>
+          <div style="font-size:0.75rem; color:var(--text-dim);" id="stat-quiz-status">Status: Not Attempted</div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-label">Active Flashcards</div>
+          <div class="stat-value">12<span class="stat-unit">cards</span></div>
+          <div style="font-size:0.75rem; color:var(--text-dim);">6 Space Weather Domains</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TWO-COLUMN WORKSPACE: TOPIC TRACKER & FOCUS TOOLS -->
+    <div class="main-workspace-grid">
+
+      <!-- ==========================================================================
+           FEATURE A: TOPIC MASTERY CHECKLIST TRACKER
+           ========================================================================== -->
+      <section class="card tracker-card" aria-labelledby="tracker-heading">
+        <div class="section-header">
+          <h2 id="tracker-heading" class="section-title">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M9 11l3 3L22 4" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            Topic Mastery Tracker
+          </h2>
+          <span class="section-tag">6 Topics / 24 Checkpoints</span>
+        </div>
+
+        <div class="tracker-toolbar">
+          <div class="tracker-status-text">
+            Mastery: <span id="toolbar-mastery-count" class="tracker-status-highlight">0/24</span> completed
+          </div>
+          <button type="button" class="btn-secondary danger" id="btn-reset-tracker">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+              <path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/>
+            </svg>
+            Reset Progress
+          </button>
+        </div>
+
+        <!-- Accordion of 6 Topics -->
+        <div class="topics-accordion-list" id="topics-accordion">
+          <!-- Injected via JavaScript for clean maintainability & data binding -->
+        </div>
+      </section>
+
+      <!-- RIGHT SIDEBAR: TIMER & FLASHCARDS -->
+      <div style="display:flex; flex-direction:column; gap:1.75rem;">
+
+        <!-- ==========================================================================
+             FEATURE B: FOCUS COUNTDOWN TIMER
+             ========================================================================== -->
+        <section class="card timer-container" aria-labelledby="timer-heading">
+          <div class="section-header" style="width:100%;">
+            <h2 id="timer-heading" class="section-title">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"/>
+                <polyline points="12 6 12 12 16 14"/>
+              </svg>
+              Focus Study Timer
+            </h2>
+            <span class="section-tag">Pomodoro</span>
+          </div>
+
+          <div class="timer-display-box" role="region" aria-live="polite">
+            <div class="timer-digits" id="timer-digits">25:00</div>
+            <div class="timer-status-banner" id="timer-status">Ready to study</div>
+          </div>
+
+          <div class="timer-controls-group">
+            <button type="button" class="btn-primary" id="btn-timer-start">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                <polygon points="5 3 19 12 5 21 5 3"/>
+              </svg>
+              <span id="btn-timer-start-label">Start</span>
+            </button>
+            <button type="button" class="btn-secondary" id="btn-timer-reset">Reset</button>
+          </div>
+
+          <div class="timer-presets">
+            <button type="button" class="preset-btn" data-minutes="25">25m Focus</button>
+            <button type="button" class="preset-btn" data-minutes="5">5m Break</button>
+            <button type="button" class="preset-btn" data-minutes="50">50m Deep</button>
+          </div>
+
+          <form class="custom-timer-form" id="custom-timer-form" aria-label="Set custom timer">
+            <label for="custom-minutes" style="font-size:0.8rem; color:var(--text-muted);">Custom (mins):</label>
+            <input type="number" id="custom-minutes" class="custom-input" min="1" max="180" value="15" required>
+            <button type="submit" class="btn-secondary" style="min-height:44px; padding:0 0.75rem;">Set</button>
+          </form>
+
+          <label class="sound-toggle-wrapper">
+            <input type="checkbox" id="chk-timer-sound" checked>
+            <span>Play chime on completion (Web Audio)</span>
+          </label>
+        </section>
+
+        <!-- ==========================================================================
+             FEATURE C: INTERACTIVE FLASHCARDS
+             ========================================================================== -->
+        <section class="card flashcard-module" aria-labelledby="flashcards-heading">
+          <div class="section-header">
+            <h2 id="flashcards-heading" class="section-title">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="2" y="7" width="20" height="14" rx="2" ry="2"/>
+                <path d="M16 21V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v16"/>
+              </svg>
+              Active Recall Flashcards
+            </h2>
+            <span class="flashcard-badge" id="card-index-indicator">Card 1 / 12</span>
+          </div>
+
+          <!-- 3D Flip Card Container -->
+          <div class="flashcard-wrapper">
+            <div class="flashcard-inner" id="flashcard-card" role="button" tabindex="0" aria-label="Flashcard. Click or press space to flip.">
+              <!-- Front Face -->
+              <div class="flashcard-face flashcard-front">
+                <div class="flashcard-tag" id="card-topic-front">Topic: Solar Flares</div>
+                <div class="flashcard-text" id="card-question-text">Loading question...</div>
+                <div class="flashcard-prompt-hint">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8M16 6l-4-4-4 4M12 2v13"/>
+                  </svg>
+                  Click or press Space to reveal answer
+                </div>
+              </div>
+
+              <!-- Back Face -->
+              <div class="flashcard-face flashcard-back">
+                <div class="flashcard-tag" id="card-topic-back">Scientific Explanation</div>
+                <div class="flashcard-text" id="card-answer-text">Loading answer...</div>
+                <div class="flashcard-prompt-hint" style="color:var(--accent-amber);">
+                  Click or press Space to flip back
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Flashcard Navigation Controls -->
+          <div class="flashcard-controls">
+            <button type="button" class="btn-secondary" id="btn-card-prev" aria-label="Previous card">
+              &larr; Prev
+            </button>
+            <button type="button" class="btn-secondary" id="btn-card-flip">
+              Flip Card
+            </button>
+            <button type="button" class="btn-secondary" id="btn-card-shuffle" title="Shuffle flashcard order">
+              Shuffle
+            </button>
+            <button type="button" class="btn-secondary" id="btn-card-next" aria-label="Next card">
+              Next &rarr;
+            </button>
+          </div>
+        </section>
+
+      </div>
+    </div>
+
+    <!-- ==========================================================================
+         FEATURE E: ADITYA-L1 PAYLOAD REFERENCE EXPLORER
+         ========================================================================== -->
+    <section class="card" aria-labelledby="payloads-heading">
+      <div class="section-header">
+        <h2 id="payloads-heading" class="section-title">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="2"/>
+            <path d="M16.24 7.76a6 6 0 010 8.49m-8.48-.01a6 6 0 010-8.49m11.31-2.82a10 10 0 010 14.14m-14.14 0a10 10 0 010-14.14"/>
+          </svg>
+          Aditya-L1 Scientific Payload Explorer
+        </h2>
+        <span class="section-tag">ISRO Halo Orbit Observatory</span>
+      </div>
+
+      <!-- Filter Tabs -->
+      <div class="payload-filter-bar" role="tablist" aria-label="Filter Aditya-L1 payloads">
+        <button type="button" class="filter-btn active" data-filter="all" role="tab" aria-selected="true">
+          All Payloads (7)
+        </button>
+        <button type="button" class="filter-btn" data-filter="remote" role="tab" aria-selected="false">
+          Remote Sensing Payloads (4)
+        </button>
+        <button type="button" class="filter-btn" data-filter="insitu" role="tab" aria-selected="false">
+          In-Situ Particle & Field Payloads (3)
+        </button>
+      </div>
+
+      <!-- Payloads Grid -->
+      <div class="payloads-grid" id="payloads-grid">
+        <!-- Rendered via JS -->
+      </div>
+    </section>
+
+    <!-- ==========================================================================
+         FEATURE D: SCORED KNOWLEDGE QUIZ MODULE
+         ========================================================================== -->
+    <section class="card quiz-container" aria-labelledby="quiz-heading">
+      <div class="section-header">
+        <h2 id="quiz-heading" class="section-title">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
+            <polyline points="14 2 14 8 20 8"/>
+            <line x1="9" y1="15" x2="15" y2="15"/>
+          </svg>
+          Space Weather Mastery Examination
+        </h2>
+        <span class="section-tag">10 Questions / Immediate Feedback</span>
+      </div>
+
+      <!-- Active Quiz View -->
+      <div id="quiz-active-view">
+        <div class="quiz-header-bar">
+          <div class="quiz-progress-text" id="quiz-question-counter">Question 1 of 10</div>
+          <div class="quiz-score-pill" id="quiz-live-score">Score: 0 / 10</div>
+        </div>
+
+        <div class="quiz-card-box" style="margin-top:1rem;">
+          <fieldset style="border:none; padding:0; margin:0;">
+            <legend class="quiz-question-title" id="quiz-question-text">Loading question...</legend>
+            <div class="quiz-options-list" id="quiz-options-container" style="margin-top:1rem;">
+              <!-- Options rendered dynamically -->
+            </div>
+          </fieldset>
+
+          <div class="quiz-explanation-box" id="quiz-explanation-box" role="region" aria-live="polite">
+            <!-- Explanation rendered dynamically -->
+          </div>
+
+          <div class="quiz-action-bar">
+            <button type="button" class="btn-primary" id="btn-quiz-submit">Submit Answer</button>
+            <button type="button" class="btn-primary" id="btn-quiz-next" style="display:none;">Next Question &rarr;</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Results Summary Screen -->
+      <div class="quiz-results-screen" id="quiz-results-screen">
+        <div class="quiz-score-circle">
+          <div id="final-score-val">0</div>
+          <span>/ 10</span>
+        </div>
+        <h3 style="font-size:1.4rem; font-weight:700;" id="final-score-title">Assessment Complete</h3>
+        <p style="color:var(--text-muted); max-width:550px; font-size:0.95rem;" id="final-score-desc">
+          Summary of your performance across the six space weather domains.
+        </p>
+        <button type="button" class="btn-primary" id="btn-quiz-retry">Retake Assessment</button>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ==========================================================================
+       RESET CONFIRMATION DIALOG (FEATURE G / MODERN DIALOG API)
+       ========================================================================== -->
+  <dialog class="modal-dialog" id="reset-modal" aria-labelledby="modal-reset-title">
+    <h3 class="modal-title" id="modal-reset-title">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+        <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
+        <line x1="12" y1="9" x2="12" y2="13"/>
+        <line x1="12" y1="17" x2="12.01" y2="17"/>
+      </svg>
+      Reset Study Progress?
+    </h3>
+    <p class="modal-body">
+      Are you sure you want to clear your checklist progress? This action will uncheck all 24 checkpoints and reset your stored mastery record in local storage.
+    </p>
+    <div class="modal-actions">
+      <button type="button" class="btn-secondary" id="btn-modal-cancel">Cancel</button>
+      <button type="button" class="btn-primary" id="btn-modal-confirm" style="background:var(--accent-rose);">Reset All</button>
+    </div>
+  </dialog>
+
+  <!-- ==========================================================================
+       FOOTER & EDUCATIONAL DISCLAIMER
+       ========================================================================== -->
+  <footer class="app-footer" role="contentinfo">
+    <div>
+      <span class="disclaimer-badge">Educational Scientific Simulation</span>
+    </div>
+    <p>
+      Grounded in research from ISRO (Aditya-L1 Mission), NASA Heliophysics Science Division, NOAA Space Weather Prediction Center (SWPC), and the Royal Academy of Engineering.
+    </p>
+    <p style="color:var(--text-dim); font-size:0.7rem;">
+      Bharat Space Education Research Centre (BSERC) GenAI Internship &bull; Project 2: Thinking in HTML &bull; Offline Single-File Architecture
+    </p>
+  </footer>
+
+  <!-- ==========================================================================
+       EMBEDDED APPLICATION LOGIC (VANILLA ES6 JAVASCRIPT)
+       ========================================================================== -->
+  <script>
+    (function () {
+      'use strict';
+
+      /* ==========================================================================
+         1. SCIENTIFIC DATA REPOSITORIES (GROUNDED IN PROJECT 1 RESEARCH)
+         ========================================================================== */
+
+      const TOPICS_DATA = [
+        {
+          id: 'topic-1',
+          name: 'Solar Flares & Coronal Dynamics',
+          items: [
+            { id: 't1-1', text: 'Understand the GOES soft X-ray flare classifications: A, B, C, M, and intense X-class (>10⁻⁴ W/m²).' },
+            { id: 't1-2', text: 'Explain magnetic reconnection in solar active regions as the driver of explosive coronal energy release.' },
+            { id: 't1-3', text: 'Differentiate between impulsive phase non-thermal emission and gradual phase thermal plasma decay.' },
+            { id: 't1-4', text: 'Evaluate speed-of-light flare propagation (8.3 mins) causing sunlit-side ionospheric D-region radio blackouts.' }
+          ]
+        },
+        {
+          id: 'topic-2',
+          name: 'Coronal Mass Ejections (CMEs)',
+          items: [
+            { id: 't2-1', text: 'Define CMEs as massive magnetized plasma expulsions containing billions of tons of solar material.' },
+            { id: 't2-2', text: 'Analyze CME kinematical phases: initiation, impulsive acceleration in low corona, and heliospheric drag.' },
+            { id: 't2-3', text: 'Describe Interplanetary CME (ICME) structures: forward shock, turbulent sheath, and helical magnetic cloud.' },
+            { id: 't2-4', text: 'Calculate transit times: ~18 to 24 hrs for fast Carrington-class storms versus 3 to 5 days for ambient CMEs.' }
+          ]
+        },
+        {
+          id: 'topic-3',
+          name: 'The Solar Wind & Heliosphere',
+          items: [
+            { id: 't3-1', text: 'Define the ambient solar wind as the continuous supersonic outflow of ionized hydrogen and helium plasma.' },
+            { id: 't3-2', text: 'Distinguish fast solar wind (~700–800 km/s from coronal holes) from slow solar wind (~300–400 km/s).' },
+            { id: 't3-3', text: 'Understand Stream Interaction Regions (SIRs) and Corotating Interaction Regions (CIRs) driving recurrent storms.' },
+            { id: 't3-4', text: 'Explain how solar wind velocity, density, and magnetic field determine upstream dynamic pressure (P = ρv²).' }
+          ]
+        },
+        {
+          id: 'topic-4',
+          name: 'Earth\'s Magnetosphere & Geomagnetic Storms',
+          items: [
+            { id: 't4-1', text: 'Describe Earth\'s magnetic shield topology: bow shock, magnetosheath, and subsolar standoff (~10 R_E).' },
+            { id: 't4-2', text: 'Explain the Dungey reconnection cycle governed by Southward Interplanetary Magnetic Field (Bz < 0).' },
+            { id: 't4-3', text: 'Examine storm metrics: Dst index ring current depression and NOAA G-Scale (G1 Minor to G5 Extreme).' },
+            { id: 't4-4', text: 'Evaluate magnetopause compression pushing the boundary inside geostationary satellite orbit (<6.6 R_E).' }
+          ]
+        },
+        {
+          id: 'topic-5',
+          name: 'Technological & Infrastructure Vulnerabilities',
+          items: [
+            { id: 't5-1', text: 'Analyze spacecraft hazards: internal dielectric charging from >2 MeV electrons and Single Event Upsets (SEUs).' },
+            { id: 't5-2', text: 'Evaluate thermospheric heating causing upper atmospheric expansion and heightened orbital drag on LEO satellites.' },
+            { id: 't5-3', text: 'Understand GNSS/GPS errors: ionospheric Total Electron Content (TEC) gradients causing range delay and scintillation.' },
+            { id: 't5-4', text: 'Detail electric power grid vulnerability: Geomagnetically Induced Currents (GICs) driving transformer core saturation.' }
+          ]
+        },
+        {
+          id: 'topic-6',
+          name: 'India\'s Aditya-L1 Mission',
+          items: [
+            { id: 't6-1', text: 'Explain Sun-Earth Lagrange Point 1 (L1) advantages: continuous 24/7 solar view without eclipses or occultation.' },
+            { id: 't6-2', text: 'Detail the VELC coronagraph (imaging corona down to 1.05 R_⊙) and SUIT near-UV full-disk telescope.' },
+            { id: 't6-3', text: 'Detail the X-ray spectrometers SoLEXS (soft X-ray) and HEL1OS (hard X-ray) for flare dynamics.' },
+            { id: 't6-4', text: 'Detail the in-situ particle payloads ASPEX, PAPA, and the MAG magnetometer boom for upstream early warning.' }
+          ]
+        }
+      ];
+
+      const FLASHCARDS_DATA = [
+        {
+          topic: 'Solar Flares',
+          question: 'What is the primary physical process that triggers a solar flare?',
+          answer: 'Magnetic reconnection in the solar corona—where strained magnetic field lines of opposite polarity suddenly break and reconnect, converting stored magnetic energy into thermal plasma heating and particle acceleration.'
+        },
+        {
+          topic: 'Solar Flares',
+          question: 'How long does electromagnetic radiation from a solar flare take to reach Earth?',
+          answer: 'Approximately 8.3 minutes (498 seconds), traveling across 1 AU (149.6 million km) at the speed of light (c).'
+        },
+        {
+          topic: 'Coronal Mass Ejections',
+          question: 'What fundamentally differentiates a solar flare from a Coronal Mass Ejection (CME)?',
+          answer: 'A solar flare is an explosive localized flash of light and electromagnetic radiation (photons), whereas a CME is a massive physical eruption of magnetized plasma and magnetic flux ropes (matter) blasted into space.'
+        },
+        {
+          topic: 'Coronal Mass Ejections',
+          question: 'What determines the transit time of an Earth-directed CME from the Sun to 1 AU?',
+          answer: 'The initial ejection speed and aerodynamic drag against the ambient solar wind. Ejection speeds range from 300 to >2,500 km/s, yielding transit times from ~18 hours (extreme Carrington-class) to 3–5 days.'
+        },
+        {
+          topic: 'Solar Wind',
+          question: 'Where does the fast solar wind originate, and what speeds does it reach?',
+          answer: 'Fast solar wind originates from open magnetic field lines in solar coronal holes, typically traveling at supersonic speeds between 700 and 800 km/s.'
+        },
+        {
+          topic: 'Solar Wind',
+          question: 'What is a Corotating Interaction Region (CIR)?',
+          answer: 'A dense compression region in the heliosphere formed when a high-speed solar wind stream overtakes a slower stream ahead of it as the Sun rotates, often triggering recurrent geomagnetic storms.'
+        },
+        {
+          topic: 'Geomagnetic Storms',
+          question: 'Which magnetic orientation is most critical for driving severe geomagnetic storms on Earth?',
+          answer: 'A strong and sustained Southward Interplanetary Magnetic Field component (Bz < 0), which enables magnetic reconnection with Earth’s northward-pointing geomagnetic field lines at the dayside magnetopause.'
+        },
+        {
+          topic: 'Geomagnetic Storms',
+          question: 'How do geomagnetic disturbances induce damaging currents in ground electric power grids?',
+          answer: 'Rapid fluctuations in Earth’s magnetic field (dB/dt) induce electric fields in the ground, causing quasi-DC Geomagnetically Induced Currents (GICs) to enter through transformer ground neutral paths, saturating cores and causing overheating.'
+        },
+        {
+          topic: 'Technological Impacts',
+          question: 'Why do low Earth orbit (LEO) satellites suffer accelerated orbital decay during solar storms?',
+          answer: 'Solar EUV and geomagnetic storm heating cause the upper thermosphere to expand outward, increasing neutral atmospheric density at orbital altitudes and creating severe aerodynamic drag.'
+        },
+        {
+          topic: 'Technological Impacts',
+          question: 'What mechanism causes High Frequency (HF, 3–30 MHz) radio blackouts during solar flares?',
+          answer: 'Flare X-rays penetrate and intensely ionize the ionosphere\'s lower D-region on the sunlit side of Earth, causing passing HF radio waves to lose energy through rapid electron-neutral collisions rather than reflecting.'
+        },
+        {
+          topic: 'Aditya-L1 Mission',
+          question: 'Why was the Sun-Earth Lagrange Point 1 (L1) selected for India\'s Aditya-L1 observatory?',
+          answer: 'Located 1.5 million km sunward of Earth, L1 provides an uninterrupted, continuous view of the Sun without eclipses, plus early upstream detection of solar wind and CMEs ~30 to 60 minutes before they strike Earth.'
+        },
+        {
+          topic: 'Aditya-L1 Mission',
+          question: 'What are the distinct scientific objectives of Aditya-L1\'s VELC and SUIT payloads?',
+          answer: 'VELC is an internally/externally occulted coronagraph observing the corona down to 1.05 R_⊙ to track CME initiation; SUIT captures full-disk near-UV images of the photosphere and chromosphere to monitor solar irradiance and flares.'
+        }
+      ];
+
+      const PAYLOADS_DATA = [
+        {
+          acronym: 'VELC',
+          fullName: 'Visible Emission Line Coronagraph',
+          type: 'remote',
+          typeLabel: 'Remote Sensing',
+          desc: 'Primary payload designed for high-resolution imaging and spectroscopy of the solar corona down to 1.05 R_⊙. Observes coronal heating dynamics, magnetic fields, and early CME acceleration.',
+          institute: 'Indian Institute of Astrophysics (IIA)'
+        },
+        {
+          acronym: 'SUIT',
+          fullName: 'Solar Ultraviolet Imaging Telescope',
+          type: 'remote',
+          typeLabel: 'Remote Sensing',
+          desc: 'Images the Sun’s disk in near-ultraviolet (200–400 nm) across 11 narrow/broad bandpass filters. Monitors solar irradiance variations, active region evolution, and chromospheric flare dynamics.',
+          institute: 'IUCAA, Pune'
+        },
+        {
+          acronym: 'SoLEXS',
+          fullName: 'Solar Low Energy X-ray Spectrometer',
+          type: 'remote',
+          typeLabel: 'Remote Sensing',
+          desc: 'Monitors soft X-ray flux (1–30 keV) from the Sun as a star. Measures spectral line intensities to determine coronal plasma temperature and elemental abundances during flare heating.',
+          institute: 'URSC, Bengaluru'
+        },
+        {
+          acronym: 'HEL1OS',
+          fullName: 'High Energy L1 Orbiting X-ray Spectrometer',
+          type: 'remote',
+          typeLabel: 'Remote Sensing',
+          desc: 'Hard X-ray spectrometer observing impulsive flare bursts (10–150 keV). Captures non-thermal electron acceleration and energy transport in the impulsive phase of solar flares.',
+          institute: 'URSC, Bengaluru'
+        },
+        {
+          acronym: 'ASPEX',
+          fullName: 'Aditya Solar wind Particle Experiment',
+          type: 'insitu',
+          typeLabel: 'In-Situ',
+          desc: 'Consists of two subsystems: SWIS (measuring solar wind protons and alpha particles in low/high energy bands) and STEPS (measuring suprathermal ions from 20 keV to 20 MeV).',
+          institute: 'Physical Research Laboratory (PRL), Ahmedabad'
+        },
+        {
+          acronym: 'PAPA',
+          fullName: 'Plasma Analyser Package for Aditya',
+          type: 'insitu',
+          typeLabel: 'In-Situ',
+          desc: 'Analyzes solar wind electrons and ions in the low energy regime. Measures energy spectra and velocity distributions of plasma arriving continuously at the L1 halo orbit.',
+          institute: 'Space Physics Laboratory (SPL/VSSC), Thiruvananthapuram'
+        },
+        {
+          acronym: 'MAG',
+          fullName: 'Tri-axial High Resolution Magnetometer',
+          type: 'insitu',
+          typeLabel: 'In-Situ',
+          desc: 'Dual fluxgate magnetometers mounted on a 6-meter deployable boom. Measures the upstream in-situ Interplanetary Magnetic Field (IMF: Bx, By, Bz) and detects CME shock arrivals.',
+          institute: 'LEOS, Bengaluru'
+        }
+      ];
+
+      const QUIZ_DATA = [
+        {
+          question: 'What GOES soft X-ray classification designates the most powerful class of solar flares?',
+          options: [
+            'C-Class (Minor bursts)',
+            'M-Class (Medium-scale eruptions)',
+            'X-Class (Intense major eruptions exceeding 10⁻⁴ W/m²)',
+            'S-Class (Sub-coronal flares)'
+          ],
+          correct: 2,
+          explanation: 'GOES classifies solar flares in the 1–8 Å band as A, B, C, M, and X. X-class flares represent the most extreme events (>10⁻⁴ W/m²), capable of triggering global sunlit radio blackouts.'
+        },
+        {
+          question: 'If an extreme Carrington-class CME travels at 2,000 km/s, approximately how long will it take to traverse the 1.496 × 10⁸ km distance from the Sun to Earth?',
+          options: [
+            '8.3 minutes',
+            '~20.8 hours',
+            '~3.5 days',
+            '~7.0 days'
+          ],
+          correct: 1,
+          explanation: 'Transit time t = Distance / Velocity. Dividing 149,600,000 km by (2,000 km/s × 3,600 s/hr) yields approximately 20.78 hours. Speed-of-light radiation takes 8.3 minutes, while average CMEs take 2–4 days.'
+        },
+        {
+          question: 'Which orientation of the Interplanetary Magnetic Field (IMF) enables maximum magnetic reconnection and energy transfer into Earth’s magnetosphere?',
+          options: [
+            'Strong Northward IMF (Bz > 0)',
+            'Strong Southward IMF (Bz < 0)',
+            'Purely Eastward IMF (By > 0)',
+            'Zero magnetic field magnitude'
+          ],
+          correct: 1,
+          explanation: 'A southward-pointing IMF (Bz < 0) is antiparallel to Earth\'s northward geomagnetic dipole field. This antiparallel alignment drives dayside magnetic reconnection, opening magnetic flux into the magnetotail.'
+        },
+        {
+          question: 'What is the typical subsolar standoff distance of Earth’s magnetopause under quiet solar wind conditions?',
+          options: [
+            '~1.5 Earth radii (R_E)',
+            '~6.6 Earth radii (R_E)',
+            '~10 Earth radii (R_E)',
+            '~60 Earth radii (R_E)'
+          ],
+          correct: 2,
+          explanation: 'Under normal dynamic pressure, the magnetopause standoff distance is roughly 10 Earth radii (~64,000 km). Extreme CME shock compression can crush this boundary inside geostationary orbit (6.6 R_E).'
+        },
+        {
+          question: 'What was the direct engineering cause of the 90-second Hydro-Québec blackout during the March 1989 geomagnetic storm?',
+          options: [
+            'Direct physical impact of solar energetic protons on overhead power cables',
+            'Geomagnetically Induced Currents (GICs) saturating transformer cores, creating harmonics that tripped protective equipment',
+            'Total failure of satellite GPS positioning clocks in Canadian substations',
+            'Lightning strikes generated by the auroral electrojet'
+          ],
+          correct: 1,
+          explanation: 'Quasi-DC GICs flowing through ground neutral points drove half-cycle saturation in high-voltage transformers. The resulting high harmonic currents tripped static VAR compensator protection, triggering systemic voltage collapse.'
+        },
+        {
+          question: 'Why do satellite navigation systems like GPS/GNSS experience degradation during severe space weather events?',
+          options: [
+            'Satellite atomic clocks are permanently disabled by coronal magnetic fields',
+            'Ionospheric Total Electron Content (TEC) gradients cause signal delays and phase/amplitude scintillation',
+            'Satellite orbits are shifted millions of kilometers into deep space',
+            'Earth’s gravitational pull weakens temporarily during geomagnetic storms'
+          ],
+          correct: 1,
+          explanation: 'Fluctuations in ionospheric electron density alter the refractive index, introducing signal delays, path bending, and severe scintillation that causes receiver loss-of-lock on satellite carrier signals.'
+        },
+        {
+          question: 'Which instrument on India’s Aditya-L1 observatory is an externally occulted coronagraph observing the corona down to 1.05 solar radii (1.05 R_⊙)?',
+          options: [
+            'SUIT (Solar Ultraviolet Imaging Telescope)',
+            'VELC (Visible Emission Line Coronagraph)',
+            'PAPA (Plasma Analyser Package for Aditya)',
+            'HEL1OS (High Energy L1 Orbiting X-ray Spectrometer)'
+          ],
+          correct: 1,
+          explanation: 'VELC, developed by the Indian Institute of Astrophysics (IIA), observes emission lines and continuum down to 1.05 R_⊙, a region critical for observing CME initiation that was previously unobserved by SOHO/LASCO C2.'
+        },
+        {
+          question: 'How do Aditya-L1’s in-situ instruments at the Sun-Earth L1 point contribute to space weather early warning?',
+          options: [
+            'They physically deflect solar plasma away from Earth using magnetic repulsion',
+            'They measure incoming solar wind density, velocity, and magnetic field vectors (Bx, By, Bz) ~30–60 minutes before they strike Earth',
+            'They provide immediate weather forecasts for commercial airlines in the troposphere',
+            'They capture radio signals from distant extrasolar planets'
+          ],
+          correct: 1,
+          explanation: 'Located 1.5 million km sunward at L1, instruments like ASPEX, PAPA, and MAG sample incoming solar wind plasma and magnetic field configurations 30 to 60 minutes before they reach Earth’s magnetosphere.'
+        },
+        {
+          question: 'What physical mechanism causes High Frequency (HF, 3–30 MHz) radio blackouts on Earth’s sunlit hemisphere during a solar flare?',
+          options: [
+            'Intense flare X-rays ionize the lower ionospheric D-region, causing radio waves to be absorbed through rapid electron collisions',
+            'The entire ionosphere completely dissipates and vanishes',
+            'Ground radio transmitters suffer electromagnetic pulse component burns',
+            'Radio frequencies are reflected backwards into the Earth’s mantle'
+          ],
+          correct: 0,
+          explanation: 'Solar flare X-rays penetrate deeply into the dense D-region (60–90 km altitude). The high electron density combined with high neutral gas density causes HF radio waves to lose energy through collisions rather than reflecting.'
+        },
+        {
+          question: 'Which pair of Aditya-L1 in-situ payloads directly measure solar wind particle velocity distributions, electrons, and ions?',
+          options: [
+            'VELC and SUIT',
+            'SoLEXS and HEL1OS',
+            'ASPEX and PAPA',
+            'MAG and LEOS'
+          ],
+          correct: 2,
+          explanation: 'ASPEX (PRL) measures solar wind proton and alpha particle distributions, while PAPA (SPL/VSSC) measures electron and ion energy spectra. Both sample pristine solar wind at the L1 halo orbit.'
+        }
+      ];
+
+      /* ==========================================================================
+         2. LOCAL STORAGE WRAPPER (GRACEFUL FALLBACK)
+         ========================================================================== */
+
+      const STORAGE_KEY_CHECKLIST = 'bserc_space_weather_checklist_v1';
+      const STORAGE_KEY_QUIZ = 'bserc_space_weather_quiz_score_v1';
+
+      function safeStorageGet(key) {
+        try {
+          const item = localStorage.getItem(key);
+          return item ? JSON.parse(item) : null;
+        } catch (e) {
+          console.warn('localStorage is unavailable or restricted. Operating in memory mode.', e);
+          return null;
+        }
+      }
+
+      function safeStorageSet(key, value) {
+        try {
+          localStorage.setItem(key, JSON.stringify(value));
+        } catch (e) {
+          console.warn('localStorage set failed.', e);
+        }
+      }
+
+      function safeStorageRemove(key) {
+        try {
+          localStorage.removeItem(key);
+        } catch (e) {
+          console.warn('localStorage remove failed.', e);
+        }
+      }
+
+      /* ==========================================================================
+         3. LIVE UTC CLOCK
+         ========================================================================== */
+
+      function initClock() {
+        const clockEl = document.getElementById('live-clock');
+        function update() {
+          const now = new Date();
+          clockEl.textContent = now.toUTCString().split(' ')[4] + ' UTC';
+        }
+        update();
+        setInterval(update, 1000);
+      }
+
+      /* ==========================================================================
+         4. FEATURE A: TOPIC MASTERY CHECKLIST & PROGRESS
+         ========================================================================== */
+
+      let checkedItemsState = safeStorageGet(STORAGE_KEY_CHECKLIST) || {};
+
+      function renderTopicAccordion() {
+        const container = document.getElementById('topics-accordion');
+        container.innerHTML = '';
+
+        TOPICS_DATA.forEach((topic, tIdx) => {
+          const group = document.createElement('div');
+          group.className = 'topic-group' + (tIdx === 0 ? ' open' : '');
+          group.id = `group-${topic.id}`;
+
+          // Calculate topic mastery
+          const totalItems = topic.items.length;
+          const completedCount = topic.items.filter(item => !!checkedItemsState[item.id]).length;
+          const pct = Math.round((completedCount / totalItems) * 100);
+
+          // Header Button
+          const headerBtn = document.createElement('button');
+          headerBtn.type = 'button';
+          headerBtn.className = 'topic-header';
+          headerBtn.setAttribute('aria-expanded', tIdx === 0 ? 'true' : 'false');
+          headerBtn.setAttribute('aria-controls', `content-${topic.id}`);
+          headerBtn.innerHTML = `
+            <div class="topic-header-title">
+              <span class="topic-index-badge">0${tIdx + 1}</span>
+              <span>${topic.name}</span>
+            </div>
+            <div class="topic-header-meta">
+              <span class="topic-pct" id="pct-${topic.id}">${completedCount}/${totalItems} (${pct}%)</span>
+              <svg class="topic-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                <polyline points="6 9 12 15 18 9"/>
+              </svg>
+            </div>
+          `;
+
+          headerBtn.addEventListener('click', () => {
+            const isOpen = group.classList.contains('open');
+            group.classList.toggle('open');
+            headerBtn.setAttribute('aria-expanded', !isOpen);
+          });
+
+          // Content Wrapper
+          const content = document.createElement('div');
+          content.className = 'topic-content';
+          content.id = `content-${topic.id}`;
+
+          const list = document.createElement('ul');
+          list.className = 'checklist-items';
+
+          topic.items.forEach(item => {
+            const isChecked = !!checkedItemsState[item.id];
+            const li = document.createElement('li');
+
+            const label = document.createElement('label');
+            label.className = 'check-label' + (isChecked ? ' completed-text' : '');
+
+            const input = document.createElement('input');
+            input.type = 'checkbox';
+            input.className = 'check-input';
+            input.checked = isChecked;
+            input.dataset.itemId = item.id;
+            input.dataset.topicId = topic.id;
+
+            input.addEventListener('change', (e) => {
+              const checked = e.target.checked;
+              checkedItemsState[item.id] = checked;
+              safeStorageSet(STORAGE_KEY_CHECKLIST, checkedItemsState);
+
+              if (checked) {
+                label.classList.add('completed-text');
+              } else {
+                label.classList.remove('completed-text');
+              }
+
+              updateProgressStats();
+              updateTopicProgress(topic.id);
+            });
+
+            const spanText = document.createElement('span');
+            spanText.textContent = item.text;
+
+            label.appendChild(input);
+            label.appendChild(spanText);
+            li.appendChild(label);
+            list.appendChild(li);
+          });
+
+          content.appendChild(list);
+          group.appendChild(headerBtn);
+          group.appendChild(content);
+          container.appendChild(group);
+        });
+
+        updateProgressStats();
+      }
+
+      function updateTopicProgress(topicId) {
+        const topic = TOPICS_DATA.find(t => t.id === topicId);
+        if (!topic) return;
+        const total = topic.items.length;
+        const completed = topic.items.filter(item => !!checkedItemsState[item.id]).length;
+        const pct = Math.round((completed / total) * 100);
+        const el = document.getElementById(`pct-${topicId}`);
+        if (el) {
+          el.textContent = `${completed}/${total} (${pct}%)`;
+        }
+      }
+
+      function updateProgressStats() {
+        const allItems = TOPICS_DATA.flatMap(t => t.items);
+        const total = allItems.length;
+        const completed = allItems.filter(item => !!checkedItemsState[item.id]).length;
+        const overallPct = Math.round((completed / total) * 100);
+
+        document.getElementById('stat-completed-items').textContent = completed;
+        document.getElementById('stat-overall-pct').textContent = overallPct;
+        document.getElementById('stat-progress-bar').style.width = overallPct + '%';
+        document.getElementById('toolbar-mastery-count').textContent = `${completed}/${total}`;
+
+        // Dynamic rank badge
+        const rankEl = document.getElementById('stat-mastery-rank');
+        if (overallPct === 100) {
+          rankEl.textContent = 'Status: Aditya-L1 Mission Specialist 🌟';
+          rankEl.style.color = 'var(--accent-amber)';
+        } else if (overallPct >= 60) {
+          rankEl.textContent = 'Status: Space Weather Scholar';
+          rankEl.style.color = 'var(--accent-cyan)';
+        } else if (overallPct >= 25) {
+          rankEl.textContent = 'Status: Undergraduate Apprentice';
+          rankEl.style.color = 'var(--text-main)';
+        } else {
+          rankEl.textContent = 'Status: Novice Researcher';
+          rankEl.style.color = 'var(--text-dim)';
+        }
+      }
+
+      // Reset Modal Dialog
+      const resetModal = document.getElementById('reset-modal');
+      const btnResetTracker = document.getElementById('btn-reset-tracker');
+      const btnModalCancel = document.getElementById('btn-modal-cancel');
+      const btnModalConfirm = document.getElementById('btn-modal-confirm');
+
+      btnResetTracker.addEventListener('click', () => {
+        if (typeof resetModal.showModal === 'function') {
+          resetModal.showModal();
+        } else {
+          if (confirm('Reset your study checklist progress?')) {
+            performReset();
+          }
+        }
+      });
+
+      btnModalCancel.addEventListener('click', () => {
+        resetModal.close();
+      });
+
+      btnModalConfirm.addEventListener('click', () => {
+        performReset();
+        resetModal.close();
+      });
+
+      function performReset() {
+        checkedItemsState = {};
+        safeStorageRemove(STORAGE_KEY_CHECKLIST);
+        renderTopicAccordion();
+      }
+
+      /* ==========================================================================
+         5. FEATURE B: FOCUS COUNTDOWN TIMER (WEB AUDIO SYNTHESIS)
+         ========================================================================== */
+
+      let timerDurationSec = 25 * 60;
+      let timerRemainingSec = 25 * 60;
+      let timerIntervalId = null;
+      let isTimerRunning = false;
+
+      const timerDigitsEl = document.getElementById('timer-digits');
+      const timerStatusEl = document.getElementById('timer-status');
+      const btnTimerStart = document.getElementById('btn-timer-start');
+      const btnTimerStartLabel = document.getElementById('btn-timer-start-label');
+      const btnTimerReset = document.getElementById('btn-timer-reset');
+      const chkTimerSound = document.getElementById('chk-timer-sound');
+      const customTimerForm = document.getElementById('custom-timer-form');
+      const customMinutesInput = document.getElementById('custom-minutes');
+
+      function formatTime(totalSec) {
+        const m = Math.floor(totalSec / 60);
+        const s = totalSec % 60;
+        return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+      }
+
+      function updateTimerDisplay() {
+        timerDigitsEl.textContent = formatTime(timerRemainingSec);
+      }
+
+      function playSynthesizedChime() {
+        if (!chkTimerSound.checked) return;
+        try {
+          const AudioContext = window.AudioContext || window.webkitAudioContext;
+          if (!AudioContext) return;
+          const ctx = new AudioContext();
+
+          // Pleasant dual chime (659Hz [E5] -> 880Hz [A5])
+          const now = ctx.currentTime;
+          
+          const osc1 = ctx.createOscillator();
+          const gain1 = ctx.createGain();
+          osc1.type = 'sine';
+          osc1.frequency.setValueAtTime(659.25, now);
+          gain1.gain.setValueAtTime(0.15, now);
+          gain1.gain.exponentialRampToValueAtTime(0.001, now + 0.6);
+          osc1.connect(gain1);
+          gain1.connect(ctx.destination);
+          osc1.start(now);
+          osc1.stop(now + 0.6);
+
+          const osc2 = ctx.createOscillator();
+          const gain2 = ctx.createGain();
+          osc2.type = 'sine';
+          osc2.frequency.setValueAtTime(880.00, now + 0.25);
+          gain2.gain.setValueAtTime(0.2, now + 0.25);
+          gain2.gain.exponentialRampToValueAtTime(0.001, now + 1.2);
+          osc2.connect(gain2);
+          gain2.connect(ctx.destination);
+          osc2.start(now + 0.25);
+          osc2.stop(now + 1.2);
+        } catch (err) {
+          console.warn('Web Audio synthesis failed or blocked by policy.', err);
+        }
+      }
+
+      function startTimer() {
+        if (isTimerRunning) return; // Prevent duplicate timers
+        if (timerRemainingSec <= 0) return;
+
+        isTimerRunning = true;
+        btnTimerStartLabel.textContent = 'Pause';
+        timerStatusEl.textContent = 'Focus session active';
+        timerStatusEl.classList.remove('complete');
+
+        timerIntervalId = setInterval(() => {
+          if (timerRemainingSec > 0) {
+            timerRemainingSec--;
+            updateTimerDisplay();
+          } else {
+            // Timer Finished
+            clearInterval(timerIntervalId);
+            timerIntervalId = null;
+            isTimerRunning = false;
+            btnTimerStartLabel.textContent = 'Start';
+            timerStatusEl.textContent = 'Session complete! Take a break.';
+            timerStatusEl.classList.add('complete');
+            playSynthesizedChime();
+          }
+        }, 1000);
+      }
+
+      function pauseTimer() {
+        if (!isTimerRunning) return;
+        clearInterval(timerIntervalId);
+        timerIntervalId = null;
+        isTimerRunning = false;
+        btnTimerStartLabel.textContent = 'Resume';
+        timerStatusEl.textContent = 'Timer paused';
+      }
+
+      function resetTimer(newSeconds) {
+        pauseTimer();
+        if (typeof newSeconds === 'number' && newSeconds > 0) {
+          timerDurationSec = newSeconds;
+        }
+        timerRemainingSec = timerDurationSec;
+        updateTimerDisplay();
+        btnTimerStartLabel.textContent = 'Start';
+        timerStatusEl.textContent = 'Ready to study';
+        timerStatusEl.classList.remove('complete');
+      }
+
+      btnTimerStart.addEventListener('click', () => {
+        if (isTimerRunning) {
+          pauseTimer();
+        } else {
+          startTimer();
+        }
+      });
+
+      btnTimerReset.addEventListener('click', () => {
+        resetTimer();
+      });
+
+      // Preset Buttons
+      document.querySelectorAll('.preset-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const mins = parseInt(btn.dataset.minutes, 10);
+          if (mins > 0) {
+            resetTimer(mins * 60);
+          }
+        });
+      });
+
+      // Custom Input Form
+      customTimerForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const mins = parseInt(customMinutesInput.value, 10);
+        if (mins > 0 && mins <= 180) {
+          resetTimer(mins * 60);
+        } else {
+          alert('Please enter a duration between 1 and 180 minutes.');
+        }
+      });
+
+      /* ==========================================================================
+         6. FEATURE C: ACTIVE RECALL FLASHCARDS
+         ========================================================================== */
+
+      let currentCardIndex = 0;
+      let flashcardsDeck = [...FLASHCARDS_DATA];
+
+      const cardWrapper = document.getElementById('flashcard-card');
+      const cardQuestionText = document.getElementById('card-question-text');
+      const cardAnswerText = document.getElementById('card-answer-text');
+      const cardTopicFront = document.getElementById('card-topic-front');
+      const cardIndexIndicator = document.getElementById('card-index-indicator');
+      const btnCardPrev = document.getElementById('btn-card-prev');
+      const btnCardNext = document.getElementById('btn-card-next');
+      const btnCardFlip = document.getElementById('btn-card-flip');
+      const btnCardShuffle = document.getElementById('btn-card-shuffle');
+
+      function displayCurrentCard() {
+        // Ensure card is front-facing when changing cards
+        cardWrapper.classList.remove('flipped');
+
+        const card = flashcardsDeck[currentCardIndex];
+        cardQuestionText.textContent = card.question;
+        cardAnswerText.textContent = card.answer;
+        cardTopicFront.textContent = `Topic: ${card.topic}`;
+        cardIndexIndicator.textContent = `Card ${currentCardIndex + 1} / ${flashcardsDeck.length}`;
+      }
+
+      function flipCurrentCard() {
+        cardWrapper.classList.toggle('flipped');
+      }
+
+      cardWrapper.addEventListener('click', flipCurrentCard);
+      btnCardFlip.addEventListener('click', flipCurrentCard);
+
+      // Keyboard accessibility (Space or Enter on card)
+      cardWrapper.addEventListener('keydown', (e) => {
+        if (e.key === ' ' || e.key === 'Enter') {
+          e.preventDefault();
+          flipCurrentCard();
+        }
+      });
+
+      btnCardNext.addEventListener('click', () => {
+        currentCardIndex = (currentCardIndex + 1) % flashcardsDeck.length;
+        displayCurrentCard();
+      });
+
+      btnCardPrev.addEventListener('click', () => {
+        currentCardIndex = (currentCardIndex - 1 + flashcardsDeck.length) % flashcardsDeck.length;
+        displayCurrentCard();
+      });
+
+      btnCardShuffle.addEventListener('click', () => {
+        // Fisher-Yates shuffle
+        for (let i = flashcardsDeck.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [flashcardsDeck[i], flashcardsDeck[j]] = [flashcardsDeck[j], flashcardsDeck[i]];
+        }
+        currentCardIndex = 0;
+        displayCurrentCard();
+      });
+
+      /* ==========================================================================
+         7. FEATURE E: ADITYA-L1 PAYLOAD REFERENCE
+         ========================================================================== */
+
+      const payloadsGrid = document.getElementById('payloads-grid');
+      const filterButtons = document.querySelectorAll('.filter-btn');
+
+      function renderPayloads(filter) {
+        payloadsGrid.innerHTML = '';
+        const filtered = filter === 'all' 
+          ? PAYLOADS_DATA 
+          : PAYLOADS_DATA.filter(p => p.type === filter);
+
+        filtered.forEach(payload => {
+          const card = document.createElement('article');
+          card.className = 'payload-card';
+
+          card.innerHTML = `
+            <div>
+              <div class="payload-card-header">
+                <div class="payload-acronym">${payload.acronym}</div>
+                <span class="payload-type-badge ${payload.type === 'remote' ? 'type-remote' : 'type-insitu'}">${payload.typeLabel}</span>
+              </div>
+              <div class="payload-full-name">${payload.fullName}</div>
+              <p class="payload-desc" style="margin-top:0.5rem;">${payload.desc}</p>
+            </div>
+            <div class="payload-institute">Lead: ${payload.institute}</div>
+          `;
+
+          payloadsGrid.appendChild(card);
+        });
+      }
+
+      filterButtons.forEach(btn => {
+        btn.addEventListener('click', () => {
+          filterButtons.forEach(b => {
+            b.classList.remove('active');
+            b.setAttribute('aria-selected', 'false');
+          });
+          btn.classList.add('active');
+          btn.setAttribute('aria-selected', 'true');
+          renderPayloads(btn.dataset.filter);
+        });
+      });
+
+      /* ==========================================================================
+         8. FEATURE D: SCORED KNOWLEDGE QUIZ
+         ========================================================================== */
+
+      let currentQuizIdx = 0;
+      let quizScore = 0;
+      let isAnswerSubmitted = false;
+
+      const quizActiveView = document.getElementById('quiz-active-view');
+      const quizResultsScreen = document.getElementById('quiz-results-screen');
+      const quizQuestionCounter = document.getElementById('quiz-question-counter');
+      const quizLiveScore = document.getElementById('quiz-live-score');
+      const quizQuestionText = document.getElementById('quiz-question-text');
+      const quizOptionsContainer = document.getElementById('quiz-options-container');
+      const quizExplanationBox = document.getElementById('quiz-explanation-box');
+      const btnQuizSubmit = document.getElementById('btn-quiz-submit');
+      const btnQuizNext = document.getElementById('btn-quiz-next');
+      const btnQuizRetry = document.getElementById('btn-quiz-retry');
+
+      const savedScore = safeStorageGet(STORAGE_KEY_QUIZ);
+      if (savedScore !== null) {
+        document.getElementById('stat-quiz-score').textContent = savedScore;
+        document.getElementById('stat-quiz-status').textContent = `Best: ${savedScore}/10 (${Math.round(savedScore * 10)}%)`;
+      }
+
+      function loadQuizQuestion(index) {
+        isAnswerSubmitted = false;
+        btnQuizSubmit.style.display = 'inline-flex';
+        btnQuizNext.style.display = 'none';
+        quizExplanationBox.classList.remove('active');
+        quizExplanationBox.innerHTML = '';
+
+        const item = QUIZ_DATA[index];
+        quizQuestionCounter.textContent = `Question ${index + 1} of ${QUIZ_DATA.length}`;
+        quizLiveScore.textContent = `Score: ${quizScore} / ${QUIZ_DATA.length}`;
+        quizQuestionText.textContent = item.question;
+
+        quizOptionsContainer.innerHTML = '';
+        item.options.forEach((opt, optIdx) => {
+          const label = document.createElement('label');
+          label.className = 'quiz-option-label';
+          label.id = `opt-label-${optIdx}`;
+
+          const radio = document.createElement('input');
+          radio.type = 'radio';
+          radio.name = 'quiz-option';
+          radio.value = optIdx;
+          radio.className = 'quiz-option-radio';
+
+          const textSpan = document.createElement('span');
+          textSpan.textContent = opt;
+
+          label.appendChild(radio);
+          label.appendChild(textSpan);
+          quizOptionsContainer.appendChild(label);
+        });
+      }
+
+      btnQuizSubmit.addEventListener('click', () => {
+        if (isAnswerSubmitted) return;
+
+        const selected = document.querySelector('input[name="quiz-option"]:checked');
+        if (!selected) {
+          alert('Please select an option before submitting.');
+          return;
+        }
+
+        isAnswerSubmitted = true;
+        const selectedIdx = parseInt(selected.value, 10);
+        const currentQ = QUIZ_DATA[currentQuizIdx];
+        const isCorrect = selectedIdx === currentQ.correct;
+
+        if (isCorrect) {
+          quizScore++;
+          quizLiveScore.textContent = `Score: ${quizScore} / ${QUIZ_DATA.length}`;
+        }
+
+        // Highlight options
+        currentQ.options.forEach((_, idx) => {
+          const optLabel = document.getElementById(`opt-label-${idx}`);
+          if (idx === currentQ.correct) {
+            optLabel.classList.add('is-correct');
+          } else if (idx === selectedIdx && !isCorrect) {
+            optLabel.classList.add('is-incorrect');
+          }
+        });
+
+        // Show Explanation
+        quizExplanationBox.classList.add('active');
+        quizExplanationBox.innerHTML = `
+          <strong>${isCorrect ? '✓ Correct Answer!' : '✗ Incorrect Selection.'}</strong><br>
+          ${currentQ.explanation}
+        `;
+
+        // Switch to Next button
+        btnQuizSubmit.style.display = 'none';
+        if (currentQuizIdx < QUIZ_DATA.length - 1) {
+          btnQuizNext.style.display = 'inline-flex';
+        } else {
+          // Finished Quiz
+          btnQuizNext.textContent = 'View Final Score';
+          btnQuizNext.style.display = 'inline-flex';
+        }
+      });
+
+      btnQuizNext.addEventListener('click', () => {
+        if (currentQuizIdx < QUIZ_DATA.length - 1) {
+          currentQuizIdx++;
+          loadQuizQuestion(currentQuizIdx);
+        } else {
+          // Show Results Screen
+          quizActiveView.style.display = 'none';
+          quizResultsScreen.classList.add('active');
+          document.getElementById('final-score-val').textContent = quizScore;
+          
+          const pct = Math.round((quizScore / QUIZ_DATA.length) * 100);
+          safeStorageSet(STORAGE_KEY_QUIZ, quizScore);
+          document.getElementById('stat-quiz-score').textContent = quizScore;
+          document.getElementById('stat-quiz-status').textContent = `Completed: ${quizScore}/10 (${pct}%)`;
+
+          const desc = document.getElementById('final-score-desc');
+          if (quizScore >= 9) {
+            desc.textContent = `Outstanding! You achieved ${pct}%. Your understanding of solar flares, CMEs, geomagnetic coupling, and Aditya-L1 is exam-ready.`;
+          } else if (quizScore >= 7) {
+            desc.textContent = `Well done! You scored ${pct}%. Review the active recall flashcards to reinforce nuanced telemetry and failure mode questions.`;
+          } else {
+            desc.textContent = `You scored ${pct}%. We recommend reviewing the Topic Mastery Checklists and reviewing the Aditya-L1 payloads before your next attempt.`;
+          }
+        }
+      });
+
+      btnQuizRetry.addEventListener('click', () => {
+        currentQuizIdx = 0;
+        quizScore = 0;
+        quizActiveView.style.display = 'block';
+        quizResultsScreen.classList.remove('active');
+        loadQuizQuestion(0);
+      });
+
+      /* ==========================================================================
+         9. INITIALIZATION
+         ========================================================================== */
+
+      initClock();
+      renderTopicAccordion();
+      updateTimerDisplay();
+      displayCurrentCard();
+      renderPayloads('all');
+      loadQuizQuestion(0);
+
+    })();
+  </script>
+</body>
+</html>
