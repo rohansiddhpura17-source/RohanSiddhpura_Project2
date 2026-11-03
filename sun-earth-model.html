@@ -1989,6 +1989,33 @@
       }
     }
 
+    /* Viewport Quick Actions: floating Eject CME / Trigger Solar Flare buttons on the 3D view, so they work without scrolling to the panel below. They are not hidden by the compact-HUD rules. */
+    .viewport-quick-actions {
+      position: absolute;
+      top: 58px;
+      right: 12px;
+      z-index: 120;
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+      pointer-events: auto;
+    }
+    .viewport-quick-actions .btn {
+      min-height: 44px;
+      padding: 0.6rem 0.95rem;
+      font-size: 0.82rem;
+      font-weight: 600;
+    }
+    @media (max-width: 480px) {
+      .viewport-quick-actions {
+        top: 52px;
+        left: 12px;
+        right: 12px;
+        justify-content: center;
+      }
+    }
+
     /* Accessibility: Prefers Reduced Motion */
     @media (prefers-reduced-motion: reduce) {
       *, *::before, *::after {
@@ -2164,6 +2191,12 @@
 
         <div class="webgl-stage-container" id="webgl-stage-container">
           <canvas id="space-weather-3d-canvas" aria-label="Interactive 3D WebGL Sun–Earth Space Weather Scene"></canvas>
+
+          <!-- Viewport Quick Actions: Eject CME / Trigger Solar Flare without scrolling to the panel below -->
+          <div class="viewport-quick-actions" role="group" aria-label="Quick eruption actions in the 3D view">
+            <button type="button" class="btn btn-cme" id="btn-viewport-eject-cme" aria-label="Eject CME from the 3D view">Eject CME</button>
+            <button type="button" class="btn btn-flare" id="btn-viewport-trigger-flare" aria-label="Trigger solar flare from the 3D view">Trigger Solar Flare</button>
+          </div>
 
           <!-- 3D Projected HTML Overlay Labels & Geometry Scale Note -->
           <div class="webgl-hud-overlay" id="webgl-hud-overlay">
@@ -3471,6 +3504,7 @@
         const l1Mins = calculateL1LeadTime(cmeSpeedKms);
 
         cmeSpeedVal.textContent = cmeSpeedKms;
+        if (cmeSpeedSlider) cmeSpeedSlider.setAttribute('aria-valuenow', String(cmeSpeedKms));
         transitCalcDisplay.textContent = `${hours.toFixed(1)} hours (~${days.toFixed(1)} days)`;
         simTransitReadout.textContent = `v = ${cmeSpeedKms} km/s (${hours.toFixed(1)}h transit)`;
         l1LeadTimeDisplay.textContent = `${l1Mins.toFixed(1)} minutes`;
@@ -3775,6 +3809,12 @@
         }
         startAnimationLoop();
       });
+
+      /* Viewport Quick Actions: reuse the existing CME / flare handlers, so the floating buttons do exactly the same thing as the panel buttons below. */
+      const btnViewportEjectCme = document.getElementById('btn-viewport-eject-cme');
+      const btnViewportTriggerFlare = document.getElementById('btn-viewport-trigger-flare');
+      if (btnViewportEjectCme && btnEjectCme) btnViewportEjectCme.addEventListener('click', () => btnEjectCme.click());
+      if (btnViewportTriggerFlare && btnTriggerFlare) btnViewportTriggerFlare.addEventListener('click', () => btnTriggerFlare.click());
 
       /* Controls: Pause / Resume */
       btnPauseSim.addEventListener('click', () => {

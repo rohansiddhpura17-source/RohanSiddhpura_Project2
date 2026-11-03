@@ -1,0 +1,38 @@
+{
+  "generated_by": "monitor.py (prototype - not yet run against live sources in this delivery)",
+  "last_checked": null,
+  "note": "Real pending updates are empty until monitor.py has actually run. The one item below is a DEMO workflow test only and is NOT a real source change. Do not publish it as science.",
+  "pending_updates": [
+    {
+      "affected_sections": ["Dashboard: quiz explanation (example only)", "Presentation: Slide 8, HF Radio (example only)"],
+      "auto_apply_allowed": false,
+      "demo_only": true,
+      "detected": "2026-11-03 (demo data, not a live check)",
+      "evidence_url": "https://www.spaceweather.gov/impacts",
+      "id": "DEMO-1",
+      "proposed_change": "DEMO TEXT ONLY: Replace the example quiz explanation with a version that cites the linked NOAA page and states its check date. Do not use this text as a real scientific update.",
+      "risk": "low_demo",
+      "source_id": "SRC-01",
+      "summary": "DEMO ONLY: Example wording change on the NOAA impacts page, used to test the Approve / Reject workflow."
+    }
+  ],
+  "schema_version": 1,
+  "sources": [
+    {"check_frequency": "weekly", "id": "SRC-01", "monitor": "page_hash_and_swpc_json", "name": "NOAA SWPC - Space Weather Impacts", "type": "live_portal", "url": "https://www.spaceweather.gov/impacts"},
+    {"check_frequency": "weekly", "id": "SRC-02", "monitor": "page_hash", "name": "NASA Heliophysics - Space Weather Focus Areas", "type": "live_portal", "url": "https://science.nasa.gov/heliophysics/focus-areas/space-weather/"},
+    {"check_frequency": "weekly", "id": "SRC-03", "monitor": "page_hash", "name": "ISRO - Aditya-L1 Mission Portal", "type": "live_portal", "url": "https://www.isro.gov.in/ISRO_EN/Aditya_L1.html"},
+    {"check_frequency": "monthly", "id": "SRC-04", "monitor": "doi_correction_check", "name": "Temmer - Space weather: the solar perspective (Living Reviews, 2021)", "type": "fixed_paper", "url": "https://link.springer.com/article/10.1007/s41116-021-00030-3"},
+    {"check_frequency": "monthly", "id": "SRC-05", "monitor": "arxiv_version_check", "name": "Tripathi et al. - The Aditya-L1 mission of ISRO (arXiv:2212.13046)", "type": "fixed_paper", "url": "https://arxiv.org/abs/2212.13046"},
+    {"check_frequency": "quarterly", "id": "SRC-06", "monitor": "pdf_hash", "name": "Cannon et al. - Extreme space weather (Royal Academy of Engineering, 2013)", "type": "fixed_report", "url": "https://raeng.org.uk/media/lz2fs5ql/space_weather_full_report_final.pdf"},
+    {"check_frequency": "quarterly", "id": "SRC-07", "monitor": "metadata_only", "name": "Pulkkinen - PSW 2381 Space Weather, Earthly Effects (video, 2017)", "type": "fixed_video", "url": "https://www.youtube.com/watch?v=Cnp3AB97Z5Y"},
+    {"check_frequency": "quarterly", "id": "SRC-08", "monitor": "metadata_only", "name": "ISRO - PSLV-C57/Aditya-L1 launch broadcast (video, 2023)", "type": "fixed_video", "url": "https://www.youtube.com/watch?v=_IcgGYZTXQw"}
+  ],
+  "live_data_channels": [
+    {"endpoint": "https://api.nasa.gov/DONKI/FLR", "key_required": true, "name": "NASA DONKI - Solar Flares (FLR)", "note": "Free api.nasa.gov key; DEMO_KEY is rate-limited. Verify the current DONKI endpoint before production use."},
+    {"endpoint": "https://api.nasa.gov/DONKI/CME", "key_required": true, "name": "NASA DONKI - CMEs (CME)", "note": "As above."},
+    {"endpoint": "https://api.nasa.gov/DONKI/GST", "key_required": true, "name": "NASA DONKI - Geomagnetic Storms (GST)", "note": "As above."},
+    {"endpoint": "https://services.swpc.noaa.gov/products/noaa-planetary-k-index.json", "key_required": false, "name": "NOAA SWPC - Planetary Kp Index", "note": "No key. SWPC JSON formats have changed in the past (e.g. March 2026 service notice); pin a snapshot and handle schema changes."},
+    {"endpoint": "https://services.swpc.noaa.gov/products/noaa-scales.json", "key_required": false, "name": "NOAA SWPC - G/S/R Scales", "note": "No key."},
+    {"endpoint": "https://services.swpc.noaa.gov/products/alerts.json", "key_required": false, "name": "NOAA SWPC - Alerts", "note": "No key."}
+  ]
+}

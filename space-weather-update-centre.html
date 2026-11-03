@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Space Weather Update Centre | BSERC Project 2 - Phase 3 Prototype</title>
+<style>
+  :root{--bg:#020617;--card:#0f172a;--text:#e2e8f0;--muted:#94a3b8;--cyan:#38bdf8;--orange:#f97316;--green:#22c55e;--red:#ef4444;--amber:#f59e0b}
+  *{box-sizing:border-box} body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;line-height:1.5}
+  header,main{max-width:980px;margin:0 auto;padding:1rem} h1{font-size:1.6rem;margin:.3rem 0} h2{font-size:1.2rem;margin-top:2rem;border-bottom:1px solid #1e293b;padding-bottom:.4rem}
+  .card{background:var(--card);border:1px solid #1e293b;border-radius:12px;padding:1rem;margin:1rem 0}
+  .gate{border-color:var(--amber);background:#1c1917}.gate strong{color:#fcd34d}
+  .muted{color:var(--muted);font-size:.9rem} a{color:var(--cyan)}
+  table{width:100%;border-collapse:collapse;font-size:.9rem} th,td{text-align:left;padding:.55rem .4rem;border-bottom:1px solid #1e293b;vertical-align:top}
+  .pill{display:inline-block;padding:.15rem .6rem;border-radius:999px;font-size:.75rem;font-weight:700}
+  .live{background:#052e16;color:#86efac}.fixed{background:#1e293b;color:#cbd5e1}.demo{background:#431407;color:#fdba74}
+  button{min-height:44px;padding:.6rem 1rem;border-radius:8px;border:1px solid #334155;background:#1e293b;color:var(--text);font-weight:600;cursor:pointer;margin-right:.5rem}
+  button.approve{background:#14532d;border-color:#22c55e} button.reject{background:#450a0a;border-color:#ef4444}
+  button:hover{filter:brightness(1.15)} .approved{border-color:var(--green)} .rejected{border-color:var(--red);opacity:.85}
+  .pack{background:#020617;border:1px dashed #334155;border-radius:8px;padding:1rem;margin-top:1rem;white-space:pre-wrap;font-family:ui-monospace,Menlo,monospace;font-size:.85rem}
+  label{font-weight:600} select{min-height:44px;background:#020617;color:var(--text);border:1px solid #334155;border-radius:8px;padding:.4rem}
+  @media(max-width:600px){table,thead,tbody,tr,th,td{display:block} th{display:none} td{border-bottom:0} tr{border-bottom:1px solid #1e293b;padding-bottom:.5rem}}
+</style>
+</head>
+<body>
+<header>
+  <p class="muted">BSERC Project 2 &bull; Phase 3 prototype &bull; NOT part of the current 3-app submission yet</p>
+  <h1>Space Weather Update Centre</h1>
+  <p>When a trusted source changes, this page should tell you first, show you the evidence, and wait for your permission. It does not rewrite your project on its own.</p>
+  <div class="card gate">
+    <strong>Permission gate &mdash; how this works:</strong>
+    <ol>
+      <li><b>Monitor</b> (a separate script, <code>monitor.py</code>) checks sources and writes <code>updates.json</code>. It never edits the dashboard, simulator or presentation.</li>
+      <li><b>Review</b> (this page) lists what changed, the source link, and which sections would be affected.</li>
+      <li><b>Approve or Reject</b> here. Approve only creates an <i>approved change pack</i> below &mdash; the exact text to apply in the next step. Reject archives the item with a reason.</li>
+      <li>Only after you approve does anything change in the project, and only the sections listed in the pack.</li>
+    </ol>
+    <p class="muted">Why a separate script? A standalone HTML file sitting unopened on your SSD cannot monitor the web, and a file opened from <code>file://</code> cannot reliably fetch live APIs because of browser CORS rules. The monitor must run separately &mdash; on your Mac, or as a scheduled GitHub Actions job &mdash; and this page reads its output.</p>
+  </div>
+</header>
+<main>
+  <h2>1 &mdash; Your eight sources: what can actually change?</h2>
+  <p class="muted">This is the honest part ChatGPT's version glossed over. Only the first three sources are live pages that regularly change. Papers and videos are fixed: they can get a correction or a new version, but they will not quietly publish new science every week.</p>
+  <div class="card">
+  <table>
+    <thead><tr><th>ID</th><th>Source</th><th>Type</th><th>How to monitor</th><th>How often</th></tr></thead>
+    <tbody>
+      <tr><td>SRC-01</td><td><a href="https://www.spaceweather.gov/impacts">NOAA SWPC &mdash; Space Weather Impacts</a></td><td><span class="pill live">Live portal</span></td><td>Page hash + SWPC JSON</td><td>Weekly</td></tr>
+      <tr><td>SRC-02</td><td><a href="https://science.nasa.gov/heliophysics/focus-areas/space-weather/">NASA Heliophysics &mdash; Space Weather</a></td><td><span class="pill live">Live portal</span></td><td>Page hash</td><td>Weekly</td></tr>
+      <tr><td>SRC-03</td><td><a href="https://www.isro.gov.in/ISRO_EN/Aditya_L1.html">ISRO &mdash; Aditya-L1 Mission Portal</a></td><td><span class="pill live">Live portal</span></td><td>Page hash</td><td>Weekly</td></tr>
+      <tr><td>SRC-04</td><td><a href="https://link.springer.com/article/10.1007/s41116-021-00030-3">Temmer (2021), Living Reviews in Solar Physics</a></td><td><span class="pill fixed">Fixed paper</span></td><td>DOI correction check</td><td>Monthly</td></tr>
+      <tr><td>SRC-05</td><td><a href="https://arxiv.org/abs/2212.13046">Tripathi et al., Aditya-L1 (arXiv:2212.13046)</a></td><td><span class="pill fixed">Fixed paper</span></td><td>arXiv version check</td><td>Monthly</td></tr>
+      <tr><td>SRC-06</td><td><a href="https://raeng.org.uk/media/lz2fs5ql/space_weather_full_report_final.pdf">Royal Academy of Engineering (2013) report</a></td><td><span class="pill fixed">Fixed report</span></td><td>PDF hash</td><td>Quarterly</td></tr>
+      <tr><td>SRC-07</td><td><a href="https://www.youtube.com/watch?v=Cnp3AB97Z5Y">Pulkkinen, PSW 2381 lecture (2017 video)</a></td><td><span class="pill fixed">Fixed video</span></td><td>Metadata only</td><td>Quarterly</td></tr>
+      <tr><td>SRC-08</td><td><a href="https://www.youtube.com/watch?v=_IcgGYZTXQw">ISRO PSLV-C57 / Aditya-L1 launch (2023 video)</a></td><td><span class="pill fixed">Fixed video</span></td><td>Metadata only</td><td>Quarterly</td></tr>
+    </tbody>
+  </table>
+  <p class="muted">Last verified in Project 1 (October 2026, see research/SOURCE_MANIFEST.md). This prototype has <b>not</b> yet run a new live check &mdash; the monitor script's first real run will set the new check date. Do not present the table above as a fresh live verification.</p>
+  </div>
+  <h2>2 &mdash; Two different channels (do not mix them up)</h2>
+  <div class="card">
+    <h3 style="margin-top:0">A. Live event data &mdash; can refresh automatically, with a timestamp</h3>
+    <p>Current flares, CMEs, geomagnetic storms and Kp index. These are <i>events</i>, not explanations.</p>
+    <ul>
+      <li>NASA DONKI: <code>api.nasa.gov/DONKI/FLR</code>, <code>/CME</code>, <code>/GST</code> &mdash; free api.nasa.gov key required; DEMO_KEY is rate-limited. Verify the current DONKI endpoint before production use.</li>
+      <li>NOAA SWPC JSON (no key): planetary Kp, G/S/R scales, alerts &mdash; <code>services.swpc.noaa.gov</code>. SWPC JSON formats have changed before, so pin a snapshot and treat a schema change as &ldquo;needs review&rdquo;, not as data.</li>
+    </ul>
+    <p class="muted">Safe auto-update rule: refresh only the event list, chart values, timestamps and source links, and always show &ldquo;Last updated: &hellip; &bull; Source: &hellip;&rdquo;. Never let a live feed rewrite a quiz answer, an explanation or the simulator's physics.</p>
+    <h3>B. Scientific knowledge &mdash; verify before publishing, always</h3>
+    <p>New documents, revised pages or changed statements from the eight sources. These go through the approval queue in section 3. No auto-publish, even if an AI draft looks good.</p>
+  </div>
+  <h2>3 &mdash; Pending updates (approval queue)</h2>
+  <p class="muted">Real pending updates are empty until <code>monitor.py</code> has actually run. The item below is a <b>DEMO workflow test only</b> &mdash; it is not a real NOAA change. Use it to try Approve / Reject, then reset it.</p>
+  <div class="card" id="demo-card">
+    <p><span class="pill demo">DEMO ONLY &mdash; NOT A REAL SOURCE CHANGE</span> &nbsp; <b id="demo-status">Status: Awaiting your decision</b></p>
+    <h3 style="margin:.5rem 0">DEMO-1 &mdash; Example wording change, NOAA SWPC impacts page</h3>
+    <p><b>Source:</b> SRC-01 &mdash; <a href="https://www.spaceweather.gov/impacts">NOAA SWPC, Space Weather Impacts</a><br>
+    <b>Detected (demo):</b> 2026-11-03 &bull; <b>Affected sections (example):</b> Dashboard quiz explanation; Presentation Slide 8 (HF Radio)<br>
+    <b>Proposed change (demo text only):</b> Replace the example quiz explanation with a version that cites the linked NOAA page and states its check date. Do not use this text as a real scientific update.</p>
+    <p><label for="reject-reason">If rejecting, reason:</label>
+      <select id="reject-reason"><option>Not relevant to this project</option><option>Evidence is weak or unclear</option><option>Needs more checking first</option></select></p>
+    <button class="approve" id="btn-approve">Approve this update</button>
+    <button class="reject" id="btn-reject">Reject this update</button>
+    <button id="btn-reset">Reset demo</button>
+    <div id="pack" class="pack" style="display:none"></div>
+    <p class="muted" id="decision-note">Your decision is saved in this browser only (localStorage), like the dashboard checklist. It does not edit any other project file.</p>
+  </div>
+  <h2>4 &mdash; What happens after you approve?</h2>
+  <div class="card">
+    <ol>
+      <li>The item moves to <b>Approved</b> with a timestamp, and the change pack above shows the exact source, affected sections and proposed text.</li>
+      <li>In the next step (with you, or with me in a new session), that pack is applied to the named files only, the files are diff-checked, and a new ZIP is built &mdash; the same verification pattern used for the viewport buttons.</li>
+      <li>Rejected items stay archived with their reason, so the same change is not silently re-proposed as new.</li>
+    </ol>
+    <p class="muted">If you want a real backend later: a weekly GitHub Actions job running <code>monitor.py</code>, committing only <code>updates.json</code> when it changes, and opening an issue / notification for you to review. It should never commit edits to the three apps by itself. That job needs a repository and a decision about where the apps live (GitHub vs. your SSD) &mdash; that is the next choice, not something to set up silently now.</p>
+  </div>
+</main>
+<script>
+(function(){
+  var card=document.getElementById('demo-card'), statusEl=document.getElementById('demo-status'),
+      pack=document.getElementById('pack'), reason=document.getElementById('reject-reason');
+  function render(state){
+    if(state==='approved'){
+      statusEl.textContent='Status: APPROVED (demo) - change pack ready, nothing else in the project was edited';
+      card.classList.add('approved'); card.classList.remove('rejected');
+      pack.style.display='block';
+      pack.textContent='APPROVED CHANGE PACK (DEMO ONLY)\n\nSource: SRC-01 - NOAA SWPC, https://www.spaceweather.gov/impacts\nDetected: 2026-11-03 (demo data)\nApproved: '+new Date().toLocaleString()+'\nAffected sections: Dashboard quiz explanation (example); Presentation Slide 8 (example)\nProposed text: DEMO TEXT ONLY - replace the example quiz explanation with a version that cites the linked NOAA page and states its check date.\n\nApply in the next step to the named files only, then diff-check and rebuild the ZIP. Do not publish this demo text as science.';
+    } else if(state==='rejected'){
+      statusEl.textContent='Status: REJECTED (demo) - reason: '+reason.value+' - archived, not applied';
+      card.classList.add('rejected'); card.classList.remove('approved');
+      pack.style.display='block'; pack.textContent='REJECTED (DEMO ONLY)\nReason: '+reason.value+'\nThis item was not applied to any project file.';
+    } else {
+      statusEl.textContent='Status: Awaiting your decision';
+      card.classList.remove('approved','rejected'); pack.style.display='none';
+    }
+  }
+  var saved=null; try{saved=localStorage.getItem('bserc-update-demo');}catch(e){}
+  if(saved==='approved'||saved==='rejected') render(saved);
+  document.getElementById('btn-approve').addEventListener('click',function(){ try{localStorage.setItem('bserc-update-demo','approved');}catch(e){} render('approved'); });
+  document.getElementById('btn-reject').addEventListener('click',function(){ try{localStorage.setItem('bserc-update-demo','rejected');}catch(e){} render('rejected'); });
+  document.getElementById('btn-reset').addEventListener('click',function(){ try{localStorage.removeItem('bserc-update-demo');}catch(e){} render('pending'); });
+})();
+</script>
+</body>
+</html>
